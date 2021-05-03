@@ -1,0 +1,120 @@
+# libs to import
+import matplotlib.pyplot as plt
+import numpy as np
+import cv2
+import aux
+import importlib
+importlib.reload(aux);
+
+
+# First:
+bgr = cv2.imread("path/to/img.type")
+rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+
+
+#1 Visualize H, S & V channels:
+aux.hsv_hists(hsv, plt)
+
+
+#2 To make a specific color mask:
+color = "hex" # colorpicker
+color1, color2 = aux.ranges(color)
+mask = aux.makeMask(hsv, color1, color2)
+
+
+#3 To make contours:
+
+##3.1 all contours (returns **ALL** contours):
+contours = bgr.copy()
+maskContours = aux.encontrar_contornos(mask)
+cv2.drawContours(bgr, maskContours, -2, (255, 0, 0), 6)
+
+##3.2 biggest contour (returns only **1** contour):
+contour = bgr.copy()
+mask1Contour = aux.encontrar_maior_contorno(mask)
+cv2.drawContours(bgr, mask1Contour, -2, (255, 0, 0), 6)
+
+
+#4 Find center of contour(s):
+imgWithCenter, xList, yList = aux.findCenter(bgr, contours)
+
+
+#5 To find circles:
+imgOut, array = aux.allCircles(bgr, mask, **opt(B, G, R)) # array = [[X, Y, R], ...]
+
+
+#6 To make line by linear regression:
+
+##6.1 Draw lines between points:
+imgWithLines = aux.desenhar_linha_entre_pontos(bgr, xList, yList, **opt(B, G, R))
+
+##6.2 Linear regression:
+if xList:
+	imgWithRegression, slope = aux.regressao_por_centro(bgr, xList, yList)
+
+##6.3 Angle of line:
+angle = aux.angleWithVertical(bgr, slope)
+
+
+#7 Discover vanishing point:
+
+##7.1 Draw lines on mask:
+lines = aux.estimar_linha_nas_faixas(bgr, mask)
+
+##7.2 Lines equations:
+equations = aux.calcular_equacao_das_retas(lines)
+for a, b in equations:
+    print("Equacao: y = {0}x + {1}".format(a, b))
+
+##7.3 vanishing point:
+img, point = aux.calcular_ponto_de_fuga(bgr, equations)
+print("Ponto de Fuga: {}".format(point))
+
+
+#8 MobileNet
+
+##8.1 MobileNet classes:
+CLASSES = aux.mobilenet_classes()
+
+##8.2 Load MobileNet:
+net = aux.load_mobilenet()
+
+##8.3 Detect:
+CONFIDENCE = 0.7
+COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
+out, results = aux.detect(net, img, CONFIDENCE, COLORS, CLASSES)
+print(results)
+
+##8.4 IoU:
+iou = aux.calcula_iou(boxA, boxB)
+
+
+#9 Distance of paper from camera (most likely with circles):
+# H - real height
+# D - real distance
+# h - imag. height
+# f - camera focus
+##9.1 From centers, calculate distance between them:
+h = aux.calcular_h(centerA, centerB) # mm
+
+##9.2 Calculate camera focus from known distance (D):
+f = aux.encontrar_foco(D, H, h )
+
+##9.3 With the camera focus (f), calculate real distance (D) from camera:
+D = aux.encontrar_distancia(f, H, h)
+
+
+# To plot:
+f, ax = plt.subplots(line, column, figsize=(16, 6))
+
+ax[0].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+ax[0].set_title('original')
+ax[0].axis('off')
+
+ax[1].imshow(mask, cmap="Greys_r")
+ax[1].set_title('segmentado')
+ax[1].axis('off')
+
+plt.show()
