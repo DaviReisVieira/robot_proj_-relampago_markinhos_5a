@@ -330,8 +330,8 @@ def load_mobilenet():
         Não mude ou renomeie esta função
         Carrega o modelo e os parametros da MobileNet. Retorna a classe da rede.
     """
-    proto = "./mobilenet_detection/MobileNetSSD_deploy.prototxt.txt" 
-    model = "./mobilenet_detection/MobileNetSSD_deploy.caffemodel"
+    proto = "/mobilenet_detection/MobileNetSSD_deploy.prototxt.txt" 
+    model = "/mobilenet_detection/MobileNetSSD_deploy.caffemodel"
 
     rede = cv2.dnn.readNetFromCaffe(proto, model)
 
