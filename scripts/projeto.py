@@ -76,19 +76,24 @@ def roda_todo_frame(imagem):
         yellow1, yellow2 = (25, 50, 50), (35, 255, 255)
         mask = aux.makeMask(hsv, yellow1, yellow2)
 
-        # contours = bgr.copy()
-        # maskContours = aux.encontrar_contornos(mask)
-        # cv2.drawContours(bgr, maskContours, -2, (255, 0, 0), 6)
+        contours = bgr.copy()
+        maskContours = aux.encontrar_contornos(mask)
+        cv2.drawContours(bgr, maskContours, -2, (255, 0, 0), 6)
 
-        # imgWithCenter, xList, yList = aux.findCenter(bgr, contours)
-        # imgWithLines = aux.desenhar_linha_entre_pontos(bgr, xList, yList)
+        imgWithCenter = bgr.copy()
+        imgWithCenter, xList, yList = aux.find_center(imgWithCenter, contours)
 
+        imgWithLines = bgr.copy()
+        # imgWithLines = aux.desenhar_linha_entre_pontos(imgWithLines, xList, yList)
+
+        imgWithRegression = bgr.copy()
         # if xList:
-	    #     imgWithRegression, slope = aux.regressao_por_centro(bgr, xList, yList)
+	    #     imgWithRegression, slope = aux.regressao_por_centro(imgWithRegression, xList, yList)
 
-        # angle = aux.angleWithVertical(bgr, slope)
+        out = imgWithRegression.copy()
+        # angle = aux.angleWithVertical(out, slope)
 
-        cv2.imshow("img", mask)
+        cv2.imshow("img", imgWithCenter)
         cv2.waitKey(1)
 
     except CvBridgeError as e:
@@ -110,7 +115,7 @@ if __name__=="__main__":
     tolerancia = 25
 
     try:
-        vel = Twist(Vector3(0,0,0), Vector3(0,0,np.pi/10.0))
+        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
         
         while not rospy.is_shutdown():
             for r in resultados:
