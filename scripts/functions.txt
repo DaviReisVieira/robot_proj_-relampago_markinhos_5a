@@ -38,7 +38,7 @@ cv2.drawContours(bgr, mask1Contour, -2, (255, 0, 0), 6)
 
 
 #4 Find center of contour(s):
-imgWithCenter, xList, yList = aux.findCenter(bgr, contours)
+imgWithCenter, xList, yList = aux.find_center(bgr, contours)
 
 
 #5 To find circles:

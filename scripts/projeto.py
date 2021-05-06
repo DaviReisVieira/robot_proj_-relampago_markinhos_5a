@@ -78,22 +78,22 @@ def roda_todo_frame(imagem):
 
         contours = bgr.copy()
         maskContours = aux.encontrar_contornos(mask)
-        cv2.drawContours(bgr, maskContours, -2, (255, 0, 0), 6)
+        cv2.drawContours(contours, maskContours, -2, (255, 0, 0), 6)
 
         imgWithCenter = bgr.copy()
-        imgWithCenter, xList, yList = aux.find_center(imgWithCenter, contours)
+        imgWithCenter, xList, yList = aux.find_center(imgWithCenter, maskContours)
 
         imgWithLines = bgr.copy()
-        # imgWithLines = aux.desenhar_linha_entre_pontos(imgWithLines, xList, yList)
+        imgWithLines = aux.desenhar_linha_entre_pontos(imgWithLines, xList, yList)
 
         imgWithRegression = bgr.copy()
-        # if xList:
-	    #     imgWithRegression, slope = aux.regressao_por_centro(imgWithRegression, xList, yList)
+        if xList:
+	        imgWithRegression, slope = aux.regressao_por_centro(imgWithRegression, xList, yList)
 
         out = imgWithRegression.copy()
         # angle = aux.angleWithVertical(out, slope)
 
-        cv2.imshow("img", imgWithCenter)
+        cv2.imshow("img", imgWithRegression)
         cv2.waitKey(1)
 
     except CvBridgeError as e:
@@ -115,7 +115,7 @@ if __name__=="__main__":
     tolerancia = 25
 
     try:
-        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+        vel = Twist(Vector3(0,0,0), Vector3(0,0,0.3))
         
         while not rospy.is_shutdown():
             for r in resultados:
