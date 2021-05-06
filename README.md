@@ -6,10 +6,9 @@ ____________
 
 Nome dos integrantes: 
 
-* pessoa 1
-* pessoa 2
-* pessoa 3
-* pessoa 4
+* Davi Reis Vieira
+* Francisco Pinheiro Janela
+* Nicolas Maciel Queiroga
 
 
 Visite sempre o enunciado abaixo para atualizacões: 
