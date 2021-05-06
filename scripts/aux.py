@@ -6,6 +6,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import math
 import cv2
 from sklearn.linear_model import LinearRegression
 import os
@@ -220,23 +221,26 @@ def regressao_por_centro(img, x, y):
         Dica: cv2.line(img,ponto1,ponto2,color,2) desenha uma linha que passe entre os pontos,
         mesmo que ponto1 e ponto2 não pertençam a imagem.
     """
-    arrayX = np.array(x).reshape(-1, 1)
-    arrayY = np.array(y).reshape(-1, 1)
+    array_x = np.array(x).reshape(-1, 1)
+    array_y = np.array(y).reshape(-1, 1)
     modelo = LinearRegression()
-    modelo.fit(arrayX, arrayY)
+    modelo.fit(array_x, array_y)
     lm, h = modelo.coef_, modelo.intercept_
+    # x_total = np.arange(0,1000)
+    # x_total_array = np.array(x_total).reshape((-1, 1))
+    # y_pred = modelo.predict(x_total_array)
 
-    xMin = int(min(arrayX))
-    xMax = int(max(arrayX))
+    x_min = int(min(array_x))
+    x_max = int(max(array_x))
 
-    yMin = int(lm*xMin + h)
-    yMax = int(lm*xMax + h)
+    y_min = int(lm*x_min + h)
+    y_max = int(lm*x_max + h)
 
-    cv2.line(img, (xMin, yMin), (xMax, yMax), (255, 255, 0), 3)
+    cv2.line(img, (x_min, y_min), (x_max, y_max), (255, 255, 0), 3)
 
     return img, lm
 
-def angleWithVertical(img, lm):
+def angle_with_vertical(img, lm):
     """
         Não mude ou renomeie esta função
         deve receber uma lista de coordenadas XY, 
@@ -437,7 +441,7 @@ def center_of_mass(data):
         cY = int(M["m01"] / M["m00"])
         return (int(cX), int(cY))
 
-def texto(img, a, p, color=(0, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width=2, size=1):
+def texto(img, a, p, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width=2, size=1):
     cv2.putText(img, str(a), p, font,size,color,width,cv2.LINE_AA)
     return
 # -----------------------------------------------------------------------------------------------------------
