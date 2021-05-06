@@ -1,6 +1,6 @@
 # Base para Projeto 1 - Robótica 
 
-Nome do grupo: 
+Nome do grupo: Relampago Marquinhos
 
 ____________
 
