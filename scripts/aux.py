@@ -128,7 +128,7 @@ def encontrar_maior_contorno(segmentado):
     return maior
 # -----------------------------------------------------------------------------------------------------------
 # 4----------------------------------------------------------------------------------------------------------
-def findCenter(img, contornos):
+def find_center(img, contornos):
     """
         Não mude ou renomeie esta função
         deve receber um contorno e retornar, 
