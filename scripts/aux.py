@@ -449,6 +449,12 @@ def texto(img, a, p, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width
     return
 # -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------
+def filter_color(bgr, low, high):
+    """ REturns a mask within the range"""
+    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, low, high)
+    return mask   
+    
 import statsmodels.api as sm
 
 def ajuste_linear_x_fy(mask):
