@@ -21,7 +21,7 @@ aux.hsv_hists(hsv, plt)
 #2 To make a specific color mask:
 color = "hex" # colorpicker
 color1, color2 = aux.ranges(color)
-mask = aux.makeMask(hsv, color1, color2)
+mask = aux.makeMask(bgr, color1, color2)
 
 
 #3 To make contours:
