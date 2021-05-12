@@ -32,7 +32,7 @@ class relampagoMarkinhos:
         self.recebedor = rospy.Subscriber(self.topico_imagem, CompressedImage, self.roda_todo_frame, queue_size=4, buff_size=2**24)
         self.velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
         #self.recebe_scan = rospy.Subscriber("/scan", LaserScan, self.scaneou)
-        #self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
+        self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
 
         self.camera_bgr = None
         self.centro_imagem = (320,240)
@@ -40,8 +40,11 @@ class relampagoMarkinhos:
         self.ang_amarelo = 0
         self.centro_x_amarelo = 320
         self.distancia = 100
-        self.frame = 0
-        self.skip = 0
+        self.ids = None
+
+        # self.parameters  = aruco.DetectorParameters_create()
+        # self.parameters.minDistanceToBorder = 0
+        # self.parameters.adaptiveThreshWinSizeMax = 2000
 
         self.iniciar_missao()
 
@@ -59,6 +62,7 @@ class relampagoMarkinhos:
             self.camera_bgr = imagem_original
 
             self.regressao_linha()
+            self.aruco_ids()
 
             cv2.waitKey(1)
         except CvBridgeError as e:
@@ -67,7 +71,7 @@ class relampagoMarkinhos:
     def regressao_linha(self):
         # mask = aux.makeMask(self.camera_bgr,(30, 55, 42), (32, 255, 255))
         mask = aux.filter_color(self.camera_bgr,np.array([22, 50, 50],dtype=np.uint8), np.array([36, 255, 255],dtype=np.uint8))
-        img, centro_yellow  =  aux.center_of_mass_region(mask, 0, 300, mask.shape[1], mask.shape[0])  
+        img, centro_amarelo = aux.center_of_mass_region(mask, 0, 300, mask.shape[1], mask.shape[0])  
         saida_bgr, m, h = aux.ajuste_linear_grafico_x_fy(mask)
         # contornos = aux.encontrar_contornos(mascara_amarelo)
         # centro_contornos, xList, yList = aux.find_center(mascara_amarelo, contornos)
@@ -77,33 +81,29 @@ class relampagoMarkinhos:
         ang_deg = math.degrees(ang)
 
         self.ang_amarelo = ang_deg
-        self.centro_x_amarelo = centro_yellow[0]
+        self.centro_x_amarelo = centro_amarelo[0]
 
         cv2.imshow("Original", img)
-        cv2.imshow("Filtro", saida_bgr)
+        #cv2.imshow("Filtro", saida_bgr)
 
     def aruco_ids(self):
         img = self.camera_bgr
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.aruco_dict)
-        aruco.drawDetectedMarkers(img, corners, ids)
-        
-        ids = np.array(ids).flatten()
-        cv2.imshow("Filtro", img)
+        if img is not None:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.aruco_dict)
+            aruco.drawDetectedMarkers(img, corners, ids)
+            self.ids = np.array(ids).flatten()
+            cv2.imshow("Original", img)
 
-        return ids, img
 
     def seguir_linha(self):
         if self.centro_imagem[0] -10 < self.centro_x_amarelo < self.centro_imagem[0] + 10:
             self.set_velocidade(0.2,0.0)
             self.velocidade_saida.publish(self.velocidade)
-            print('dentro')
             if -15 < self.ang_amarelo < 15:  # para angulos centrados na vertical, regressao de x = f(y) como está feito
                 self.set_velocidade(0.4,0.0)
                 self.velocidade_saida.publish(self.velocidade)
-            print('dentro 1')
         else: 
-            print('dentro 2')
             delta_x = self.centro_imagem[0] - self.centro_x_amarelo
             max_delta = 150.0
             w = (delta_x/max_delta)*0.20
@@ -114,10 +114,7 @@ class relampagoMarkinhos:
 
     def missao_conceito_c(self):
         self.seguir_linha()
-        #ids,img=self.aruco_ids()
-        print("Leituras Ditancia:",self.distancia)
-        print("Leituras Centro Amarelo:",self.centro_x_amarelo)
-        print("Leituras Centro Amarelo:",self.ang_amarelo)
+        #print("Leituras Ditancia:",self.distancia)
 
     def iniciar_missao(self):
         r = rospy.Rate(200)
