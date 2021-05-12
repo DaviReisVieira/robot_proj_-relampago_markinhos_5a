@@ -88,18 +88,19 @@ def ranges(value):
     hsv2[1:] = 255
     return hsv, hsv2 
 
-def makeMask(hsv, low=None, high=None, hexx=None):
+def makeMask(bgr, low=None, high=None, hexx=None,kernel=(6,6)):
     """
-        Can recieve the img in hsv, and color range or the color value in hex
+        Can recieve the img in bgr, and color range or the color value in hex
     """
+    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     if hexx is not None and low is None and high is None:
         low, high = ranges(hexx)
 
     mask = cv2.inRange(hsv, low, high)
 
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(6,6))
-    mask = cv2.morphologyEx( mask, cv2.MORPH_OPEN, kernel )
-    mask = cv2.morphologyEx( mask, cv2.MORPH_CLOSE, kernel )
+    kernel_final = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,kernel)
+    mask = cv2.morphologyEx( mask, cv2.MORPH_OPEN, kernel_final )
+    mask = cv2.morphologyEx( mask, cv2.MORPH_CLOSE, kernel_final )
     return mask 
 # -----------------------------------------------------------------------------------------------------------
 # 3----------------------------------------------------------------------------------------------------------
@@ -225,7 +226,7 @@ def regressao_por_centro(img, x, y):
     array_y = np.array(y).reshape(-1, 1)
     modelo = LinearRegression()
     modelo.fit(array_x, array_y)
-    lm, h = modelo.coef_, modelo.intercept_
+    coef_ang, h = modelo.coef_, modelo.intercept_
     # x_total = np.arange(0,1000)
     # x_total_array = np.array(x_total).reshape((-1, 1))
     # y_pred = modelo.predict(x_total_array)
@@ -233,12 +234,12 @@ def regressao_por_centro(img, x, y):
     x_min = int(min(array_x))
     x_max = int(max(array_x))
 
-    y_min = int(lm*x_min + h)
-    y_max = int(lm*x_max + h)
+    y_min = int(coef_ang*x_min + h)
+    y_max = int(coef_ang*x_max + h)
 
     cv2.line(img, (x_min, y_min), (x_max, y_max), (255, 255, 0), 3)
 
-    return img, lm
+    return img, coef_ang, h
 
 def angle_with_vertical(img, lm):
     """
@@ -434,15 +435,81 @@ def encontrar_distancia(f,H,h):
     return D
 # -----------------------------------------------------------------------------------------------------------
 # misc-------------------------------------------------------------------------------------------------------
-def center_of_mass(data):
-    M = cv2.moments(data)
-    if (M["m00"] != 0):
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        return (int(cX), int(cY))
+def center_of_mass(mask):
+    """ Retorna uma tupla (cx, cy) que desenha o centro do contorno"""
+    M = cv2.moments(mask)
+    # Usando a expressão do centróide definida em: https://en.wikipedia.org/wiki/Image_moment
+    m00 = max(M["m00"],1) # para evitar dar erro quando não há contornos
+    cX = int(M["m10"] / m00)
+    cY = int(M["m01"] / m00)
+    return [int(cX), int(cY)]
 
 def texto(img, a, p, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width=2, size=1):
     cv2.putText(img, str(a), p, font,size,color,width,cv2.LINE_AA)
     return
 # -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------
+import statsmodels.api as sm
+
+def ajuste_linear_x_fy(mask):
+    """Recebe uma imagem já limiarizada e faz um ajuste linear
+        retorna coeficientes linear e angular da reta
+        e equação é da forma
+        x = coef_angular*y + coef_linear
+    """ 
+    pontos = np.where(mask==255)
+    ximg = pontos[1]
+    yimg = pontos[0]
+
+    ## Caso adicionado para evitar resultados invalidos
+    if len(ximg) < 10: 
+        return 0,0, [[0],[0]]
+
+    yimg_c = sm.add_constant(yimg)
+    model = sm.OLS(ximg,yimg_c)
+    results = model.fit()
+    coef_angular = results.params[1] # Pegamos o beta 1
+    coef_linear =  results.params[0] # Pegamso o beta 0
+    return coef_angular, coef_linear, pontos # Pontos foi adicionado para performance, como mencionado no notebook
+
+
+def ajuste_linear_grafico_x_fy(mask_in, print_eq = False): 
+    """Faz um ajuste linear e devolve uma imagem rgb com aquele ajuste desenhado sobre uma imagem
+       Trabalhando com x em funcão de y
+    """
+
+    # vamos criar uma imagem com 50% do tamanho para acelerar a regressao 
+    # isso nao afeta muito o angulo
+
+    scale_percent = 50 # percent of original size
+    width = int(mask_in.shape[1] * scale_percent / 100)
+    height = int(mask_in.shape[0] * scale_percent / 100)
+    dim = (width, height)
+
+    mask = cv2.resize(mask_in, dim)
+
+    coef_angular, coef_linear, pontos  = ajuste_linear_x_fy(mask)
+    if print_eq: 
+        print("x = {:3f}*y + {:3f}".format(coef_angular, coef_linear))
+    ximg = pontos[1]
+    yimg = pontos[0]
+    y_bounds = np.array([min(yimg), max(yimg)])
+    x_bounds = coef_angular*y_bounds + coef_linear
+    # print("x bounds", x_bounds)
+    # print("y bounds", y_bounds)
+    x_int = x_bounds.astype(dtype=np.int64)
+    y_int = y_bounds.astype(dtype=np.int64)
+    mask_bgr =  cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)    
+    cv2.line(mask_bgr, (x_int[0], y_int[0]), (x_int[1], y_int[1]), color=(0,0,255), thickness=5);    
+    return mask_bgr, coef_angular, coef_linear
+
+def center_of_mass_region(mask, x1, y1, x2, y2):
+    mask_bgr = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+    clipped = mask[y1:y2, x1:x2]
+    c = center_of_mass(clipped)
+    c[0]+=x1
+    c[1]+=y1
+    crosshair(mask_bgr, c, 10, (0,0,255))
+    cv2.rectangle(mask_bgr, (x1, y1), (x2, y2), (255,0,0),2,cv2.LINE_AA)
+    centro = (int(c[0]), int(c[1]))
+    return mask_bgr, centro
