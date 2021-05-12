@@ -29,10 +29,10 @@ class relampagoMarkinhos:
         rospy.init_node("projeto")
         
         self.topico_imagem = "/camera/image/compressed"
-        self.recebedor = rospy.Subscriber(self.topico_imagem, CompressedImage, self.roda_todo_frame, queue_size=4, buff_size=1)
+        self.recebedor = rospy.Subscriber(self.topico_imagem, CompressedImage, self.roda_todo_frame, queue_size=4, buff_size=2**24)
         self.velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
-        self.recebe_scan = rospy.Subscriber("/scan", LaserScan, self.scaneou)
-        self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
+        #self.recebe_scan = rospy.Subscriber("/scan", LaserScan, self.scaneou)
+        #self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
 
         self.camera_bgr = None
         self.centro_imagem = (320,240)
@@ -40,6 +40,8 @@ class relampagoMarkinhos:
         self.ang_amarelo = 0
         self.centro_x_amarelo = 320
         self.distancia = 100
+        self.frame = 0
+        self.skip = 0
 
         self.iniciar_missao()
 
@@ -55,6 +57,7 @@ class relampagoMarkinhos:
         try:
             imagem_original = self.bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
             self.camera_bgr = imagem_original
+
             self.regressao_linha()
 
             cv2.waitKey(1)
@@ -62,7 +65,8 @@ class relampagoMarkinhos:
             print('ex', e)
 
     def regressao_linha(self):
-        mask = aux.makeMask(self.camera_bgr,(30, 55, 42), (32, 255, 255))
+        # mask = aux.makeMask(self.camera_bgr,(30, 55, 42), (32, 255, 255))
+        mask = aux.filter_color(self.camera_bgr,np.array([22, 50, 50],dtype=np.uint8), np.array([36, 255, 255],dtype=np.uint8))
         img, centro_yellow  =  aux.center_of_mass_region(mask, 0, 300, mask.shape[1], mask.shape[0])  
         saida_bgr, m, h = aux.ajuste_linear_grafico_x_fy(mask)
         # contornos = aux.encontrar_contornos(mascara_amarelo)
@@ -75,8 +79,8 @@ class relampagoMarkinhos:
         self.ang_amarelo = ang_deg
         self.centro_x_amarelo = centro_yellow[0]
 
-        #cv2.imshow("Original", saida_bgr)
-        #cv2.imshow("Filtro", saida_bgr)
+        cv2.imshow("Original", img)
+        cv2.imshow("Filtro", saida_bgr)
 
     def aruco_ids(self):
         img = self.camera_bgr
@@ -106,19 +110,22 @@ class relampagoMarkinhos:
             self.set_velocidade(0.2,w)
             self.velocidade_saida.publish(self.velocidade)
         
-        self.velocidade_saida.publish(self.velocidade)
+        #self.velocidade_saida.publish(self.velocidade)
 
     def missao_conceito_c(self):
         self.seguir_linha()
-        ids,img=self.aruco_ids()
+        #ids,img=self.aruco_ids()
         print("Leituras Ditancia:",self.distancia)
+        print("Leituras Centro Amarelo:",self.centro_x_amarelo)
+        print("Leituras Centro Amarelo:",self.ang_amarelo)
 
     def iniciar_missao(self):
-        rospy.sleep(0.1)
+        r = rospy.Rate(200)
         try: 
             while not rospy.is_shutdown():
                 if self.conceitoC:
                     self.missao_conceito_c()
+            r.sleep()
 
         except rospy.ROSInterruptException:
             print("Oh Deus quantos CTRL+C")
