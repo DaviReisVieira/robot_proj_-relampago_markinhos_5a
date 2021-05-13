@@ -480,19 +480,22 @@ def ajuste_linear_x_fy(mask):
 
 
 def ajuste_linear_grafico_x_fy(mask_in, print_eq = False): 
-    """Faz um ajuste linear e devolve uma imagem rgb com aquele ajuste desenhado sobre uma imagem
+    """
+       Faz um ajuste linear e devolve uma imagem rgb com aquele ajuste desenhado sobre uma imagem
        Trabalhando com x em funcão de y
     """
 
-    # vamos criar uma imagem com 50% do tamanho para acelerar a regressao 
-    # isso nao afeta muito o angulo
+    y_centro, x_centro = mask_in.shape[0]//2, mask_in.shape[1]//2
+    y_max, x_max = mask_in.shape
+    mask = mask_in[y_centro:y_max, 0:x_max]
+    
+    # if direction == "forward":
+    #     mask = mask_in[y_centro:y_max, 0:x_max]
+    # elif direction == "right":
+    #     mask = mask_in[y_centro:y_max, x_centro:x_max]
+    # elif direction == "left":
+    #     mask = mask_in[y_centro:y_max, 0:x_centro]
 
-    scale_percent = 50 # percent of original size
-    width = int(mask_in.shape[1] * scale_percent / 100)
-    height = int(mask_in.shape[0] * scale_percent / 100)
-    dim = (width, height)
-
-    mask = cv2.resize(mask_in, dim)
 
     coef_angular, coef_linear, pontos  = ajuste_linear_x_fy(mask)
     if print_eq: 
@@ -507,6 +510,7 @@ def ajuste_linear_grafico_x_fy(mask_in, print_eq = False):
     y_int = y_bounds.astype(dtype=np.int64)
     mask_bgr =  cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)    
     cv2.line(mask_bgr, (x_int[0], y_int[0]), (x_int[1], y_int[1]), color=(0,0,255), thickness=5);    
+
     return mask_bgr, coef_angular, coef_linear
 
 def center_of_mass_region(mask, x1, y1, x2, y2):
