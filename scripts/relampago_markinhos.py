@@ -7,6 +7,7 @@ import numpy as np
 import tf
 import aux
 import math
+from math import pi
 import cv2
 import cv2.aruco as aruco
 from nav_msgs.msg import Odometry
@@ -31,7 +32,7 @@ class relampagoMarkinhos:
         self.topico_imagem = "/camera/image/compressed"
         self.recebedor = rospy.Subscriber(self.topico_imagem, CompressedImage, self.roda_todo_frame, queue_size=4, buff_size=2**24)
         self.velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
-        #self.recebe_scan = rospy.Subscriber("/scan", LaserScan, self.scaneou)
+        self.recebe_scan = rospy.Subscriber("/scan", LaserScan, self.scaneou)
         self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
 
         self.camera_bgr = None
@@ -41,6 +42,8 @@ class relampagoMarkinhos:
         self.centro_x_amarelo = 320
         self.distancia = 100
         self.ids = None
+        self.FLAG = 'segue_linha'
+        self.sinalizacao = 'nenhuma'
 
         # self.parameters  = aruco.DetectorParameters_create()
         # self.parameters.minDistanceToBorder = 0
@@ -48,7 +51,7 @@ class relampagoMarkinhos:
 
         self.iniciar_missao()
 
-    def scaneou(self,dado):
+    def scaneou(self, dado):
         ranges = np.array(dado.ranges).round(decimals=2)
         self.distancia = ranges[0]
 
@@ -63,6 +66,7 @@ class relampagoMarkinhos:
 
             self.regressao_linha()
             self.aruco_ids()
+            self.identifica_sinais()
 
             cv2.waitKey(1)
         except CvBridgeError as e:
@@ -83,8 +87,8 @@ class relampagoMarkinhos:
         self.ang_amarelo = ang_deg
         self.centro_x_amarelo = centro_amarelo[0]
 
-        cv2.imshow("Original", img)
-        #cv2.imshow("Filtro", saida_bgr)
+        #cv2.imshow("Filtro", img)
+        #cv2.imshow("Regressão", saida_bgr)
 
     def aruco_ids(self):
         img = self.camera_bgr
@@ -98,10 +102,10 @@ class relampagoMarkinhos:
 
     def seguir_linha(self):
         if self.centro_imagem[0] -10 < self.centro_x_amarelo < self.centro_imagem[0] + 10:
-            self.set_velocidade(0.2,0.0)
+            self.set_velocidade(0.4,0.0)
             self.velocidade_saida.publish(self.velocidade)
-            if -15 < self.ang_amarelo < 15:  # para angulos centrados na vertical, regressao de x = f(y) como está feito
-                self.set_velocidade(0.4,0.0)
+            if -15 < self.ang_amarelo < 15:
+                self.set_velocidade(0.5,0.0)
                 self.velocidade_saida.publish(self.velocidade)
         else: 
             delta_x = self.centro_imagem[0] - self.centro_x_amarelo
@@ -109,20 +113,63 @@ class relampagoMarkinhos:
             w = (delta_x/max_delta)*0.20
             self.set_velocidade(0.2,w)
             self.velocidade_saida.publish(self.velocidade)
-        
-        #self.velocidade_saida.publish(self.velocidade)
 
+    def rotacionar(self,v_ang,momento,delta):
+        self.set_velocidade(0.0,0.0)
+        self.velocidade_saida.publish(self.velocidade)
+        now = rospy.get_time()
+        while now - momento < delta:
+            #print('DELTA CALCULADO', now - momento)
+            self.set_velocidade(0.0,v_ang)
+            self.velocidade_saida.publish(self.velocidade)
+            #print('rotacionando')
+            now = rospy.get_time()
+        else:
+            self.FLAG = 'segue_linha'
+    
     def missao_conceito_c(self):
-        self.seguir_linha()
-        #print("Leituras Ditancia:",self.distancia)
+        #print("Leituras Distancia:",self.distancia)
+        self.segue_pista()
+        #1.21 - 50
+        #1.21 - 200
 
+    def identifica_sinais(self):
+        try:
+            for i in self.ids:
+                if i == 100:
+                    self.sinalizacao = 'bifurcacao'
+                elif i == 200:
+                    self.sinalizacao = 'rotatoria'   
+                elif i == 50:
+                    self.sinalizacao = 'retorna'
+        except Exception:
+            pass
+
+    def segue_pista(self):
+        if self.sinalizacao == 'bifurcacao' and self.distancia <= 1.25:
+            momento = rospy.get_time()
+            #print('momento', momento)
+            self.rotacionar(-1*(pi/5),momento,1)
+            self.sinalizacao == 'nenhuma'
+        elif self.sinalizacao == 'retorna' and self.distancia <= 0.7:
+            momento = rospy.get_time()
+            self.rotacionar(-1*(pi/5),momento,5)
+            self.sinalizacao == 'nenhuma'
+        elif self.sinalizacao == 'rotatoria' and self.distancia <= 0.9:
+            momento = rospy.get_time()
+            self.rotacionar(-1*(pi/5),momento,2.5)
+            self.sinalizacao == 'nenhuma'
+        elif self.FLAG == 'segue_linha':
+            self.seguir_linha()
+        #print(self.distancia)
+        
     def iniciar_missao(self):
-        r = rospy.Rate(200)
+        # r = rospy.Rate(200)
         try: 
             while not rospy.is_shutdown():
                 if self.conceitoC:
                     self.missao_conceito_c()
-            r.sleep()
+            rospy.sleep(0.01)
 
         except rospy.ROSInterruptException:
             print("Oh Deus quantos CTRL+C")
