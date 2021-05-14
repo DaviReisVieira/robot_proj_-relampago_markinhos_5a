@@ -88,19 +88,19 @@ def ranges(value):
     hsv2[1:] = 255
     return hsv, hsv2 
 
-def makeMask(bgr, low=None, high=None, hexx=None,kernel=(6,6)):
+def make_mask(bgr, low, high, kernel=False):
     """
         Can recieve the img in bgr, and color range or the color value in hex
     """
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-    if hexx is not None and low is None and high is None:
-        low, high = ranges(hexx)
 
     mask = cv2.inRange(hsv, low, high)
 
-    kernel_final = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,kernel)
-    mask = cv2.morphologyEx( mask, cv2.MORPH_OPEN, kernel_final )
-    mask = cv2.morphologyEx( mask, cv2.MORPH_CLOSE, kernel_final )
+    if kernel:
+        kernel_final = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(6,6))
+        mask = cv2.morphologyEx( mask, cv2.MORPH_OPEN, kernel_final )
+        mask = cv2.morphologyEx( mask, cv2.MORPH_CLOSE, kernel_final )
+
     return mask 
 # -----------------------------------------------------------------------------------------------------------
 # 3----------------------------------------------------------------------------------------------------------
@@ -127,36 +127,29 @@ def encontrar_maior_contorno(segmentado):
         if area > maior_area:
             maior_area = area
             maior = c
-    return maior
+
+
+    return maior, maior_area
 # -----------------------------------------------------------------------------------------------------------
 # 4----------------------------------------------------------------------------------------------------------
-def find_center(img, contornos):
+def find_center(frame, maior_contorno, centro):
     """
         Não mude ou renomeie esta função
         deve receber um contorno e retornar, 
         respectivamente, a imagem com uma cruz no centro de cada segmento 
         e o centro dele. formato: img, x, y
     """
-    X = []
-    Y = []
-    areaL = []
+    if not maior_contorno is None :
+        cv2.drawContours(frame, [maior_contorno], -1, [0, 0, 255], 5)
+        maior_contorno = np.reshape(maior_contorno, (maior_contorno.shape[0], 2))
+        media = maior_contorno.mean(axis=0)
+        media = media.astype(np.int32)
+        cv2.circle(frame, (media[0], media[1]), 5, [0, 255, 0])
+        crosshair(frame, centro)
+    else:
+        media = (0, 0)
 
-    for c in contornos:
-        areaL.append(cv2.contourArea(c))
-    mean = np.mean(areaL)
-
-    for c in contornos:
-        area = cv2.contourArea(c)
-        M = cv2.moments(c)
-        if (M["m00"] != 0) and area >= mean/2:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-            X.append(cX)
-            Y.append(cY)
-            p = (int(cX), int(cY))
-            crosshair(img, p, 20, (128, 0, 0))
-
-    return img, X, Y
+    return media
 
 def crosshair(img, point, size=20, color=(128, 0, 0)):
     x, y = point
@@ -241,7 +234,7 @@ def regressao_por_centro(img, x, y):
 
     return img, coef_ang, h
 
-def angle_with_vertical(img, lm):
+def angle_with_vertical(lm):
     """
         Não mude ou renomeie esta função
         deve receber uma lista de coordenadas XY, 
@@ -404,35 +397,8 @@ def calcula_iou(boxA, boxB):
     return iou
 # -----------------------------------------------------------------------------------------------------------
 # 9----------------------------------------------------------------------------------------------------------
-def calcular_h(centro1, centro2):
-    """ 
-        Não mude ou renomeie esta função
-        deve receber dois pontos e retornar a distancia absoluta entre eles
-    """
-    x1, y1 = centro1
-    x2, y2 = centro2
-    d = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-    return d
 
-def encontrar_foco(D,H,h):
-    """
-        Não mude ou renomeie esta função
-        deve receber respectivamente a distancia real,
-        o a distancia real entre os circulos e a distancia
-        na image entre os circulos e deve retornar o foco
-    """
-    f = D*h/H
-    return f
 
-def encontrar_distancia(f,H,h):
-    """
-        Não mude ou renomeie esta função
-        deve receber respectivamente o foco a 
-        distancia real entre os circulos e a distancia na 
-        image entre os circulos e retornar a distancia real
-    """
-    D = f*H/h
-    return D
 # -----------------------------------------------------------------------------------------------------------
 # misc-------------------------------------------------------------------------------------------------------
 def center_of_mass(mask):
@@ -444,13 +410,13 @@ def center_of_mass(mask):
     cY = int(M["m01"] / m00)
     return [int(cX), int(cY)]
 
-def texto(img, a, p, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width=2, size=1):
+def text(img, a, p, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width=2, size=4):
     cv2.putText(img, str(a), p, font,size,color,width,cv2.LINE_AA)
     return
 # -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------
-def filter_color(bgr, low, high):
-    """ REturns a mask within the range"""
+def filtrar_cor(bgr, low, high):
+    """ Retorna a máscara com o range"""
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, low, high)
     return mask   
@@ -484,18 +450,9 @@ def ajuste_linear_grafico_x_fy(mask_in, print_eq = False):
        Faz um ajuste linear e devolve uma imagem rgb com aquele ajuste desenhado sobre uma imagem
        Trabalhando com x em funcão de y
     """
-
     y_centro, x_centro = mask_in.shape[0]//2, mask_in.shape[1]//2
     y_max, x_max = mask_in.shape
     mask = mask_in[y_centro:y_max, 0:x_max]
-    
-    # if direction == "forward":
-    #     mask = mask_in[y_centro:y_max, 0:x_max]
-    # elif direction == "right":
-    #     mask = mask_in[y_centro:y_max, x_centro:x_max]
-    # elif direction == "left":
-    #     mask = mask_in[y_centro:y_max, 0:x_centro]
-
 
     coef_angular, coef_linear, pontos  = ajuste_linear_x_fy(mask)
     if print_eq: 
@@ -504,8 +461,6 @@ def ajuste_linear_grafico_x_fy(mask_in, print_eq = False):
     yimg = pontos[0]
     y_bounds = np.array([min(yimg), max(yimg)])
     x_bounds = coef_angular*y_bounds + coef_linear
-    # print("x bounds", x_bounds)
-    # print("y bounds", y_bounds)
     x_int = x_bounds.astype(dtype=np.int64)
     y_int = y_bounds.astype(dtype=np.int64)
     mask_bgr =  cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)    
@@ -513,7 +468,7 @@ def ajuste_linear_grafico_x_fy(mask_in, print_eq = False):
 
     return mask_bgr, coef_angular, coef_linear
 
-def center_of_mass_region(mask, x1, y1, x2, y2):
+def regiao_centro_de_massa(mask, x1, y1, x2, y2):
     mask_bgr = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
     clipped = mask[y1:y2, x1:x2]
     c = center_of_mass(clipped)
@@ -523,3 +478,30 @@ def center_of_mass_region(mask, x1, y1, x2, y2):
     cv2.rectangle(mask_bgr, (x1, y1), (x2, y2), (255,0,0),2,cv2.LINE_AA)
     centro = (int(c[0]), int(c[1]))
     return mask_bgr, centro
+
+
+def identifica_cor(frame, cor):
+
+    if cor == "blue":
+        cor_menor = np.array([75, 50, 50])
+        cor_maior = np.array([95, 255, 255])
+    elif cor == "green":
+        cor_menor = np.array([45, 100, 100])
+        cor_maior = np.array([75, 255, 255])
+    elif cor == "orange":
+        cor_menor = np.array([0, 200, 200])
+        cor_maior = np.array([8, 255, 255])
+
+    bgr = frame.copy()
+    segmentado_cor = aux.make_mask(bgr, cor_menor, cor_maior, kernel=True)
+    centro = (frame.shape[1]//2, frame.shape[0]//2)
+
+    maior_contorno, maior_contorno_area = aux.encontrar_maior_contorno(segmentado_cor.copy())
+    media = aux.find_center(frame, maior_contorno, centro)
+
+    s1 = "{:d} {:d}".format(*media)
+    s2 = "{:0.1f}".format(maior_contorno_area)
+    aux.text(frame, s1, (20, 100))
+    aux.text(frame, s2, (20, 50))
+
+    return centro, maior_contorno_area, media
