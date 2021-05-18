@@ -95,9 +95,11 @@ class RosActions:
             self.seguir_linha()
         elif dic_functions['sinalizacao'] == 'retorna' and (dic_functions['distancia_frontal'] <= 0.7) and self.FLAG == 'segue_linha':
             self.FLAG = 'retorna'
+            print('retorna')
             self.dic['angulo_salvo'] = dic_functions['ang_odom']
         elif dic_functions['sinalizacao'] == 'rotatoria' and (dic_functions['distancia_frontal'] <= 0.7) and self.FLAG == 'segue_linha':
             self.FLAG = 'rotatoria'
+            print('rotatoria')
             self.dic['momento'] = rospy.get_time()
             self.dic['posicao_rotatoria'] = dic_functions['posicao']
             self.RosFunctions.set_dic('corte_direita',True)
