@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 import time
 from termcolor import colored
-from playsound import playsound
+# from playsound import playsound
+
 
 def logo_relampago_markinhos(objetivo, ativar_todos = False):
     insper_on = False
@@ -15,45 +17,46 @@ def logo_relampago_markinhos(objetivo, ativar_todos = False):
         sinal_on = False
         agradecimentos_on = True
 
+    # playsound("sinal_markinhos.mp3")
 
     if markinhos_on:
         print("\n\n")
-        print(colored("                   ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿","red"))
-        print(colored("                   ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⣉⣁⣤⣤⣶⣾⣿⣿⣶⡄⢲⣯⢍⠁⠄⢀⢹⣿","red"))
-        print(colored("                   ⣿⣿⣿⣿⣿⣿⣿⣿⣿⢯⣾⣿⣿⣏⣉⣹⠿⠇⠄⠽⠿⢷⡈⠿⠇⣀⣻⣿⡿⣻","red"))
-        print(colored("                   ⣿⣿⡿⠿⠛⠛⠛⢛⡃⢉⢣⡤⠤⢄⡶⠂⠄⠐⣀⠄⠄⠄⠄⠄⡦⣿⡿⠛⡇⣼","red"))
-        print(colored("                   ⡿⢫⣤⣦⠄⠂⠄⠄⠄⠄⠄⠄⠄⠄⠠⠺⠿⠙⠋⠄⠄⠄⠢⢄⠄⢿⠇⠂⠧⣿","red"))
-        print(colored("                   ⠁⠄⠈⠁⠄⢀⣀⣀⣀⣀⣠⣤⡤⠴⠖⠒⠄⠄⠄⠄⠄⠄⠄⠄⠄⠘⢠⡞⠄⣸","red"))
-        print(colored("                   ⡀⠄⠄⠄⠄⠄⠤⠭⠦⠤⠤⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣂⣿","red"))
-        print(colored("                   ⣷⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢳⠄⠄⢀⠈⣠⣤⣤⣼⣿","red"))
-        print(colored("                   ⣿⣿⣷⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣄⡀⠄⠈⠑⢙⣡⣴⣿⣿⣿⣿⣿","red"))
-        print(colored("                   ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿","red"))
+        print(colored("                  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿","red"))
+        print(colored("                  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⣉⣁⣤⣤⣶⣾⣿⣿⣶⡄⢲⣯⢍⠁⠄⢀⢹⣿⣿","red"))
+        print(colored("                  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢯⣾⣿⣿⣏⣉⣹⠿⠇⠄⠽⠿⢷⡈⠿⠇⣀⣻⣿⡿⣻⣿","red"))
+        print(colored("                  ⣿⣿⣿⡿⠿⠛⠛⠛⢛⡃⢉⢣⡤⠤⢄⡶⠂⠄⠐⣀⠄⠄⠄⠄⠄⡦⣿⡿⠛⡇⣼⣿","red"))
+        print(colored("                  ⣿⡿⢫⣤⣦⠄⠂⠄⠄⠄⠄⠄⠄⠄⠄⠠⠺⠿⠙⠋⠄⠄⠄⠢⢄⠄⢿⠇⠂⠧⣿⣿","red"))
+        print(colored("                  ⣿⠁⠄⠈⠁⠄⢀⣀⣀⣀⣀⣠⣤⡤⠴⠖⠒⠄⠄⠄⠄⠄⠄⠄⠄⠄⠘⢠⡞⠄⣸⣿","red"))
+        print(colored("                  ⣿⡀⠄⠄⠄⠄⠄⠤⠭⠦⠤⠤⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣂⣿⣿","red"))
+        print(colored("                  ⣿⣷⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢳⠄⠄⢀⠈⣠⣤⣤⣼⣿⣿","red"))
+        print(colored("                  ⣿⣿⣿⣷⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣄⡀⠄⠈⠑⢙⣡⣴⣿⣿⣿⣿⣿⣿","red"))
+        print(colored("                  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿","red"))
         print("\n")
 
     if markinhos_on: 
-        print(colored("    _____  ______ _        //\   __  __ _____        _____  ____  ", "red"))
+        print(colored("    _____  ______ _        //\   __  __ _____        _____  ____  ", "white"))
         time.sleep(time_regulado)
         print(colored("   |  __ \|  ____| |      |/_\| |  \/  |  __ \ /\   / ____|/ __ \ ", "white"))
         time.sleep(time_regulado)
-        print(colored("   | |__) | |__  | |       / \  | \  / | |__) /  \ | |  __| |  | |", "red"))
+        print(colored("   | |__) | |__  | |       / \  | \  / | |__) /  \ | |  __| |  | |", "white"))
         time.sleep(time_regulado)
         print(colored("   |  _  /|  __| | |      / _ \ | |\/| |  ___/ /\ \| | |_ | |  | |", "white"))
         time.sleep(time_regulado)
-        print(colored("   | | \ \| |____| |____ / ___ \| |  | | |  / ____ \ |__| | |__| |", "red"))
+        print(colored("   | | \ \| |____| |____ / ___ \| |  | | |  / ____ \ |__| | |__| |", "white"))
         time.sleep(time_regulado)
         print(colored("   |_|  \_\______|______/_/   \_\_|  |_|_| /_/    \_\_____|\____/ ", "white"))
         time.sleep(time_regulado)
         print(colored("    __  __          _____  _  _______ _   _ _    _  ____   _____ ", "red"))
         time.sleep(time_regulado)
-        print(colored("   |  \/  |   /\   |  __ \| |/ /_   _| \ | | |  | |/ __ \ / ____|", "white"))
+        print(colored("   |  \/  |   /\   |  __ \| |/ /_   _| \ | | |  | |/ __ \ / ____|", "red"))
         time.sleep(time_regulado)
         print(colored("   | \  / |  /  \  | |__) | ' /  | | |  \| | |__| | |  | | (___  ", "red"))
         time.sleep(time_regulado)
-        print(colored("   | |\/| | / /\ \ |  _  /|  <   | | | . ` |  __  | |  | |\___ \ ", "white"))
+        print(colored("   | |\/| | / /\ \ |  _  /|  <   | | | . ` |  __  | |  | |\___ \ ", "red"))
         time.sleep(time_regulado)
         print(colored("   | |  | |/ ____ \| | \ \| . \ _| |_| |\  | |  | | |__| |____) |", "red"))
         time.sleep(time_regulado)
-        print(colored("   |_|  |_/_/    \_\_|  \_\_|\_\_____|_| \_|_|  |_|\____/|_____/ ", "white"))
+        print(colored("   |_|  |_/_/    \_\_|  \_\_|\_\_____|_| \_|_|  |_|\____/|_____/ ", "red"))
         time.sleep(time_regulado)
 
     if sinal_on:
@@ -114,19 +117,19 @@ def logo_relampago_markinhos(objetivo, ativar_todos = False):
         print("\n")
         print(colored("      Mecânicos: Davi Reis, Francisco Janela e Nicolas Queiroga.","green"))
         time.sleep(time_regulado)
-        print(colored("Patrocinadores: Fábio Miranda, Lícia Sales, Arnaldo Junior e Diego Pavan.","white"))
+        print(colored(" Engenheiros: Fábio Miranda, Lícia Sales, Arnaldo Junior e Diego Pavan.","white"))
         time.sleep(time_regulado)
 
     print("\n")
-    print("-----------------------OBJETIVO:-------------------------")
-    print(f'- Cor do Creeper: {objetivo[0]}')
-    print(f'- ID do Creeper: {objetivo[1]}')
-    print(f'- Estação Final: {objetivo[2]}')
-    print("---------------------------------------------------------")
+    print("      -----------------------OBJETIVO:-------------------------")
+    print(f'                      - Cor do Creeper: {objetivo[0]}')
+    print(f'                      - ID do Creeper: {objetivo[1]}')
+    print(f'                      - Estação Final: {objetivo[2]}')
+    print("      ---------------------------------------------------------")
     print("\n")
-    print(colored("---------------------------------------------------------","red"))
-    print(colored("|       Informações Vitais do Relâmpago Markinhos:      |","red"))
-    print(colored("---------------------------------------------------------","red"))
+    print(colored("      ---------------------------------------------------------","red"))
+    print(colored("      |        Informações Vitais do Relâmpago Markinhos:     |","white"))
+    print(colored("      ---------------------------------------------------------","red"))
     print("\n")
 
 def encerrar_missao():

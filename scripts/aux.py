@@ -415,10 +415,18 @@ def text(img, a, p, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width=
     return
 # -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------
-def filtrar_cor(bgr, low, high):
+def filtrar_cor(bgr, low, high, direita=False):
     """ Retorna a máscara com o range"""
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, low, high)
+    x_center, y_center = hsv.shape[1]//2, hsv.shape[0]//2
+    y_max, x_max, _ = hsv.shape
+
+    if not direita:
+        mask = cv2.inRange(hsv, low, high)
+    else:
+        mask = cv2.inRange(hsv[y_center:y_max, x_center:x_max], low, high)
+
+    cv2.imshow("Mask", mask)
     return mask   
     
 import statsmodels.api as sm

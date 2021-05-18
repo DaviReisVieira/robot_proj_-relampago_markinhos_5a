@@ -14,11 +14,8 @@ from tf import transformations
 from tf import TransformerROS
 import tf2_ros
 
-import relampago_markinhos
-import ros_actions
 
-
-class rosFunctions:
+class RosFunctions:
 
     ##========================== INIT ==========================##
     def __init__(self):
@@ -37,22 +34,40 @@ class rosFunctions:
 
         self.camera_bgr = None
 
+        self.dic['corte_direita'] = False
+
+        self.dic['centro_imagem'] = (0,0)
+        self.dic['distancia_frontal'] = 100
+        self.dic['distancia_lateral_esquerda'] = 100
+        self.dic['distancia_lateral_direita'] = 100
+        self.dic['posicao'] = [0, 0]
+        self.dic['ang_odom'] = 0
+        self.dic['ang_amarelo'] = 0
+        self.dic['centro_x_amarelo'] = 320
+        self.dic['ids'] = []
+        self.dic['sinalizacao'] = 'nenhuma'
+        
+        
+
 
     ##======================== GETTERS =========================##
     def get_dic(self):
-        return self.dic_funcions
+        return self.dic
 
     ##======================== SETTERS =========================##
-
+    def set_dic(self,chave,variavel):
+        self.dic[chave] = variavel
     
     ##====================== SUBSCRIBERS =======================##
 
     #------------------------- Camera ----------------------------
     def roda_todo_frame(self,imagem):
         try:
-            self.imagem_crua = imagem
-            imagem_original = self.bridge.compressed_imgmsg_to_cv2(self.imagem_crua, "bgr8")
+            imagem_crua = imagem
+            imagem_original = self.bridge.compressed_imgmsg_to_cv2(imagem_crua, "bgr8")
             self.camera_bgr = imagem_original
+
+            self.dic['centro_imagem'] = (self.camera_bgr.shape[1]//2,self.camera_bgr.shape[0]//2)
 
             self.regressao_linha()
             self.aruco_ids()
@@ -66,30 +81,38 @@ class rosFunctions:
     #-------------------------- Lazer ----------------------------
     def scaneou(self, dado):
         ranges = np.array(dado.ranges).round(decimals=2)
-        self.distancia = [ranges[358],ranges[0],ranges[2]]
+        distancia_frontal = [ranges[358],ranges[0],ranges[2]]
+        distancia_lateral_esquerda = [ranges[319],ranges[320], ranges[321]]
+        distancia_lateral_direita = [ranges[39],ranges[40],ranges[41]]
+        self.dic['distancia_frontal'] = min(distancia_frontal)
+        self.dic['distancia_lateral_esquerda'] = min(distancia_lateral_esquerda)
+        self.dic['distancia_lateral_direita'] = min(distancia_lateral_direita)
 
 
     #-------------------------- Odom -----------------------------
     def recebeu_leitura_odometria(self, dado):
-
-        self.x_odom = dado.pose.pose.position.x
-        self.y_odom = dado.pose.pose.position.y
+        x_odom = dado.pose.pose.position.x
+        y_odom = dado.pose.pose.position.y
         quat = dado.pose.pose.orientation
 
         lista = [quat.x, quat.y, quat.z, quat.w]
         angulos = np.degrees(transformations.euler_from_quaternion(lista)) 
         if angulos[2] < 0:
-            self.ang_odom = 360 + angulos[2]
+            ang_odom = 360 + angulos[2]
         else:
-            self.ang_odom = angulos[2]
+            ang_odom = angulos[2]
 
         #print('posicao x:', self.x_odom, ',  posixao y', self.y_odom)
-
+        self.dic['posicao'] = [x_odom, y_odom]
+        self.dic['ang_odom'] = ang_odom
 
 
     ##======================= FUNCTIONS ========================##
     def regressao_linha(self):
-        mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50],dtype=np.uint8), np.array([36, 255, 255],dtype=np.uint8))
+        if self.dic['corte_direita']:
+            mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8), direita=True)
+        else:
+            mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8))
         img, centro_amarelo = aux.regiao_centro_de_massa(mask, 0, 300, mask.shape[1], mask.shape[0])  
         saida_bgr, m, h = aux.ajuste_linear_grafico_x_fy(mask)
         
@@ -114,6 +137,7 @@ class rosFunctions:
             if draw_image:
                 aruco.drawDetectedMarkers(img, corners, ids)
             cv2.imshow("Original", img)
+            # cv2.moveWindow("Original", 0, 0)
             # self.dic_ids = {}
             # try:
             #     for i in range(len(self.ids)):
@@ -132,6 +156,5 @@ class rosFunctions:
                 elif (i == 50 or i == 150) and (self.dic['sinalizacao'] != 'bifurcacao' or self.passou_bifurcacao):
                     self.dic['sinalizacao'] = 'retorna'
         except Exception:
+	        #print("Ocorreu uma erro na leitura dos IDs. Markinhos não passa bem.")
             pass
-
-
