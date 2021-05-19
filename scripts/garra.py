@@ -9,6 +9,9 @@ class Garra:
         self.ombro = rospy.Publisher("/joint1_position_controller/command", Float64, queue_size=1)
         self.garra = rospy.Publisher("/joint2_position_controller/command", Float64, queue_size=1)
 
+        self.ombro.publish(-1.0)  ## Levanta  
+        self.garra.publish(0.0)  ## Fechado   
+
     def capturar_objeto(self, momento):
         now = rospy.get_time()
         if not self.comecou_garra:

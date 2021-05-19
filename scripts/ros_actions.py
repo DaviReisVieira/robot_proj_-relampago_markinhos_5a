@@ -7,6 +7,7 @@ import cv2
 from math import atan2
 from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped, Point
 from std_msgs.msg import Float64
+from termcolor import colored
 
 
 class RosActions:
@@ -27,10 +28,11 @@ class RosActions:
         self.dic['posicao_bifurcacao'] = [0,0]
         self.dic['posicao_rotatoria'] = [0,0]
         self.dic['angulo_salvo'] = 0
+        self.em_rotatoria = True
 
     ##======================== GETTERS =========================##
     def get_dic(self):
-        return self.dic_funcions
+        return self.dic
 
     ##======================== SETTERS =========================##
     def set_velocidade(self, v_lin=0.0, v_ang=0.0):
@@ -47,9 +49,7 @@ class RosActions:
         self.retorna_odom_sinalizacao(dic_functions)
         if self.FLAG == 'segue_linha':
             self.seguir_linha()
-
-            
-
+    
     #-------------------------- Linha --------------------------
     '''
     Já possui controle proporcional
@@ -65,7 +65,7 @@ class RosActions:
         else: 
             delta_x = dic_functions['centro_imagem'][0] - dic_functions['centro_x_amarelo'] 
             max_delta = 150
-            w = (delta_x/max_delta)*0.20
+            w = (delta_x/max_delta)*0.25
             self.set_velocidade(0.2,w)
 
     #------------------------- Rotação -------------------------
@@ -75,33 +75,44 @@ class RosActions:
             soma += 360
         elif soma > 360:
             soma -= 360
-        if soma - 0.5 <= dic_functions['ang_odom'] <= soma + 0.5:
+        if soma - 1 <= dic_functions['ang_odom'] <= soma + 1:
             if self.FLAG == 'retorna':
                 self.FLAG = 'retorna_odom_bifurcacao'
+            elif self.FLAG == 'entra_rotatoria':
+                self.dic['momento'] = rospy.get_time()
+                self.FLAG = 'retorna_odom_rotatoria'
             else:
+                print(colored(" - 'Relâmpago Markinhos': Concentra, concentra, velocidade!","red"))
                 self.FLAG = 'segue_linha'
         else:
-            self.set_velocidade(0.0, (angulo/abs(angulo))*0.10)
+            self.set_velocidade(0.0, (angulo/abs(angulo))*0.30)
         
 
     #----------------------- Sinalização -----------------------
     def controle_sinalizacao(self, dic_functions):
         if dic_functions['sinalizacao'] == 'bifurcacao' and (dic_functions['distancia_frontal'] <= 1.15) and self.FLAG == 'segue_linha':
+            print(colored('Bifurcação para a direita - VELOCIDADE!','yellow'))
+            print(" - 'Doc Hudson': Antigamente os carros não dirigiam pra ganhar tempo, dirigiam pra aproveitar o tempo.")
             self.FLAG = 'bifurcacao'
-            print('bifurcacao')
             self.dic['momento'] = rospy.get_time()
             self.dic['posicao_bifurcacao'] = dic_functions['posicao']
             self.RosFunctions.set_dic('corte_direita',True)
+            self.RosFunctions.set_dic('sinalizacao','nenhuma')
             self.seguir_linha()
         elif dic_functions['sinalizacao'] == 'retorna' and (dic_functions['distancia_frontal'] <= 0.7) and self.FLAG == 'segue_linha':
+            print(colored('Retorno! - Marty avisou pelo rádio do perigo em frente!','yellow'))
+            print(colored(" - 'Relâmpago Markinhos': Caramba Marty, essa foi por pouco!","red"))
             self.FLAG = 'retorna'
             self.dic['angulo_salvo'] = dic_functions['ang_odom']
         elif dic_functions['sinalizacao'] == 'rotatoria' and (dic_functions['distancia_frontal'] <= 0.7) and self.FLAG == 'segue_linha':
-            self.FLAG = 'rotatoria'
-            self.dic['momento'] = rospy.get_time()
+            print(colored('Entrando no circuito oval!','yellow'))
+            print(colored(" - 'Relâmpago Markinhos': Estou no circuito oval! Me avisa para sair.","red"))
+            print(" - 'Doc Hudson': Amigo, você é um corredor corajoso.")
+            print(" - 'Marty': Pode deixar, amigo!")
+            self.FLAG = 'entra_rotatoria'
+            self.RosFunctions.set_dic('passou_bifurcacao',False)
+            self.dic['angulo_salvo'] = dic_functions['ang_odom']
             self.dic['posicao_rotatoria'] = dic_functions['posicao']
-            self.RosFunctions.set_dic('corte_direita',True)
-            self.seguir_linha()
 
 
     #---------------------- Movimentação -----------------------
@@ -111,36 +122,39 @@ class RosActions:
             if now - self.dic['momento'] > 4:
                 self.FLAG = 'segue_linha'
                 self.RosFunctions.set_dic('corte_direita',False)
+                self.RosFunctions.set_dic('passou_bifurcacao',True)
             else:
                 self.seguir_linha()
+        elif self.FLAG == 'entra_rotatoria':
+            self.rotacao_odom(dic_functions, -75)
         elif self.FLAG == 'rotatoria':
             if now - self.dic['momento'] > 5:
-                if self.em_rotatoria:
-                    self.FLAG = 'segue_linha'
-                    self.em_rotatoria = False
-                else:
-                    self.FLAG = 'retorna_odom_rotatoria'
-                    self.em_rotatoria = True
-                self.RosFunctions.set_dic('corte_direita',False)
+                self.FLAG = 'retorna_odom_rotatoria'
             else:
                 self.seguir_linha()
+        elif self.FLAG == 'sai_rotatoria':
+            self.rotacao_odom(dic_functions, -75)
         elif self.FLAG == 'retorna':
             self.rotacao_odom(dic_functions, 180)
 
     def retorna_odom_sinalizacao(self,dic_functions):
         now = rospy.get_time()
         if self.FLAG == 'retorna_odom_bifurcacao':
-            if self.dic['posicao_bifurcacao'][1] - 0.3 < dic_functions['posicao'][1] < self.dic['posicao_bifurcacao'][1] + 0.6:
+            if self.dic['posicao_bifurcacao'][1] - 0.6 < dic_functions['posicao'][1] < self.dic['posicao_bifurcacao'][1] + 0.6:
                 self.dic['momento'] = rospy.get_time()
                 self.RosFunctions.set_dic('corte_direita',True)
                 self.FLAG = 'bifurcacao'
+                print(colored('Relâmpago Markinhos está na bifurcação!','yellow'))
+                print(colored(" - 'Relâmpago Markinhos': Eu sei aonde estamos indo!","red"))
             else:
                 self.seguir_linha()
         elif self.FLAG == 'retorna_odom_rotatoria':
             if self.dic['posicao_rotatoria'][0] - 0.7 < dic_functions['posicao'][0] < self.dic['posicao_rotatoria'][0] + 0.7 and self.dic['posicao_rotatoria'][1] - 0.3 < dic_functions['posicao'][1] < self.dic['posicao_rotatoria'][1] + 0.3 and now-self.dic['momento'] > 10:
-                self.dic['momento'] = rospy.get_time()
-                self.RosFunctions.set_dic('corte_direita',True)
-                self.FLAG = 'rotatoria'
+                self.dic['angulo_salvo'] = dic_functions['ang_odom']
+                self.FLAG = 'sai_rotatoria'
+                print(colored('Saindo do circuito oval!','yellow'))
+                print(" - 'Marty': Pode sair agora, amigo!")
+                print(colored(" - 'Relâmpago Markinhos': Eu sou a velocidade!","red"))
             else:
                 self.seguir_linha()
 

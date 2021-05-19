@@ -46,6 +46,7 @@ class RosFunctions:
         self.dic['centro_x_amarelo'] = 320
         self.dic['ids'] = []
         self.dic['sinalizacao'] = 'nenhuma'
+        self.dic['passou_bifurcacao'] = False
         
         
 
@@ -53,6 +54,9 @@ class RosFunctions:
     ##======================== GETTERS =========================##
     def get_dic(self):
         return self.dic
+
+    def get_camera_bgr(self):
+        return self.camera_bgr
 
     ##======================== SETTERS =========================##
     def set_dic(self,chave,variavel):
@@ -70,7 +74,7 @@ class RosFunctions:
             self.dic['centro_imagem'] = (self.camera_bgr.shape[1]//2,self.camera_bgr.shape[0]//2)
 
             self.regressao_linha()
-            self.aruco_ids()
+            self.aruco_ids(True)
             self.identifica_sinais()
 
             cv2.waitKey(1)
@@ -81,7 +85,7 @@ class RosFunctions:
     #-------------------------- Lazer ----------------------------
     def scaneou(self, dado):
         ranges = np.array(dado.ranges).round(decimals=2)
-        distancia_frontal = [ranges[358],ranges[0],ranges[2]]
+        distancia_frontal = [ranges[357],ranges[358],ranges[359],ranges[0],ranges[1],ranges[2],ranges[3]]
         distancia_lateral_esquerda = [ranges[319],ranges[320], ranges[321]]
         distancia_lateral_direita = [ranges[39],ranges[40],ranges[41]]
         self.dic['distancia_frontal'] = min(distancia_frontal)
@@ -109,11 +113,13 @@ class RosFunctions:
 
     ##======================= FUNCTIONS ========================##
     def regressao_linha(self):
+        mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8))
+        
         if self.dic['corte_direita']:
-            mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8), direita=True)
+            img, centro_amarelo = aux.regiao_centro_de_massa(mask, mask.shape[1]//2, 0, mask.shape[1], mask.shape[0])  
         else:
-            mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8))
-        img, centro_amarelo = aux.regiao_centro_de_massa(mask, 0, 300, mask.shape[1], mask.shape[0])  
+            img, centro_amarelo = aux.regiao_centro_de_massa(mask, 0, 300, mask.shape[1], mask.shape[0])  
+        
         saida_bgr, m, h = aux.ajuste_linear_grafico_x_fy(mask)
         
         ang = math.atan(m)
@@ -122,7 +128,7 @@ class RosFunctions:
         self.dic['ang_amarelo'] = ang_deg
         self.dic['centro_x_amarelo'] = centro_amarelo[0]
 
-        # cv2.imshow("Filtro", img)
+        cv2.imshow("Filtro", img)
         # cv2.imshow("Regressão", saida_bgr)
 
     #-------------------------- Aruco ----------------------------
@@ -137,14 +143,6 @@ class RosFunctions:
             if draw_image:
                 aruco.drawDetectedMarkers(img, corners, ids)
             cv2.imshow("Original", img)
-            # cv2.moveWindow("Original", 0, 0)
-            # self.dic_ids = {}
-            # try:
-            #     for i in range(len(self.ids)):
-            #         self.dic_ids[self.ids[i]]  =  np.array(corners[i])
-            # except Exception:
-            #     pass
-            # print(self.dic_ids)
 
     def identifica_sinais(self):
         try:
@@ -153,7 +151,7 @@ class RosFunctions:
                     self.dic['sinalizacao'] = 'bifurcacao'
                 elif i == 200:
                     self.dic['sinalizacao'] = 'rotatoria'
-                elif (i == 50 or i == 150) and (self.dic['sinalizacao'] != 'bifurcacao' or self.passou_bifurcacao):
+                elif (i == 50 or i == 150) and (self.dic['sinalizacao'] != 'bifurcacao' or self.dic['passou_bifurcacao']):
                     self.dic['sinalizacao'] = 'retorna'
         except Exception:
 	        #print("Ocorreu uma erro na leitura dos IDs. Markinhos não passa bem.")

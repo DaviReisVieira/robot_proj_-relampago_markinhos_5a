@@ -11,8 +11,8 @@ class Creeper:
     def get_codigo(self):
         return self.codigo
 
-    def identifica_cor(self, relampago):
-        centro, maior_contorno_area, media = aux.identifica_cor(relampago.get_camera_bgr(), self.get_cor())
+    def identifica_creepers(self, ros_functions):
+        centro, maior_contorno_area, media = aux.identifica_cor(ros_functions.camera_bgr, self.get_cor())
         return centro, maior_contorno_area, media
     
         
