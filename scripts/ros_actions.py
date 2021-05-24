@@ -126,8 +126,14 @@ class RosActions:
             print(colored('Retorno! - Marty avisou pelo rádio do perigo em frente!','yellow'))
             print(colored(" - 'Relâmpago Markinhos': Caramba Marty, essa foi por pouco!","red"))
             self.FLAG = 'retorna'
+            print('retorna')
             self.dic['angulo_salvo'] = dic_functions['ang_odom']
         elif dic_functions['sinalizacao'] == 'rotatoria' and (dic_functions['distancia_frontal'] <= 0.7) and self.FLAG == 'segue_linha':
+<<<<<<< HEAD
+            self.FLAG = 'rotatoria'
+            print('rotatoria')
+            self.dic['momento'] = rospy.get_time()
+=======
             print(colored('Entrando no circuito oval!','yellow'))
             print(colored(" - 'Relâmpago Markinhos': Estou no circuito oval! Me avisa para sair.","red"))
             print(" - 'Doc Hudson': Amigo, você é um corredor corajoso.")
@@ -135,6 +141,7 @@ class RosActions:
             self.FLAG = 'entra_rotatoria'
             self.RosFunctions.set_dic('passou_bifurcacao',False)
             self.dic['angulo_salvo'] = dic_functions['ang_odom']
+>>>>>>> 13f1c2e4fc96263812c7f54026f7a21d3c03ceb3
             self.dic['posicao_rotatoria'] = dic_functions['posicao']
 
 
