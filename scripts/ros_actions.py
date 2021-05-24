@@ -11,9 +11,14 @@ from termcolor import colored
 
 
 class RosActions:
+    # Classe que cuidará da movimentação do markinhos, iniciada na classe RelampagoMarkinhos
 
     ##========================== INIT ==========================##
     def __init__(self, RosFunctions):
+        '''
+        Inicialização e recebe a classe RosFunctions para utilizar suas variáveis
+        Indicação do publisher de velocidade.
+        '''
         self.RosFunctions = RosFunctions
         self.dic = {}
 
@@ -32,10 +37,12 @@ class RosActions:
 
     ##======================== GETTERS =========================##
     def get_dic(self):
+        # Getter do dicionário de variáveis desta classe
         return self.dic
 
     ##======================== SETTERS =========================##
     def set_velocidade(self, v_lin=0.0, v_ang=0.0):
+        # Set da velocidade desejada no robô - publish imediato
         self.velocidade.linear.x = v_lin
         self.velocidade.angular.z = v_ang
         self.velocidade_saida.publish(self.velocidade)
@@ -43,6 +50,10 @@ class RosActions:
     
     ##======================= FUNCTIONS ========================##
     def segue_pista(self):
+        '''
+        Função principal de seguir a pista do projeto
+        Organiza as funções de modo a identificar a sinalização também
+        '''
         dic_functions = self.RosFunctions.get_dic()
         self.controle_sinalizacao(dic_functions)
         self.organiza_movimentacao(dic_functions)
@@ -57,6 +68,9 @@ class RosActions:
     # v = theta/k, w = theta*k, k eh natural positivo
 
     def seguir_linha(self):
+        '''
+        Função responsável por seguir a linha amarela com controle proporcional de velocidade
+        '''
         dic_functions = self.RosFunctions.get_dic()
         if dic_functions['centro_imagem'][0]-10 < dic_functions['centro_x_amarelo'] < dic_functions['centro_imagem'][0] + 10:
             self.set_velocidade(0.4)
@@ -70,6 +84,11 @@ class RosActions:
 
     #------------------------- Rotação -------------------------
     def rotacao_odom(self, dic_functions, angulo): 
+        '''
+        Recebe o ângulo com a amplitude de rotação
+        O robô realiza essa rotação partinfo fo seu angulo de odometria
+        positivo para a esquerda, negativo para a direita
+        '''
         soma = self.dic['angulo_salvo'] + angulo
         if soma < 0:
             soma += 360
@@ -90,6 +109,10 @@ class RosActions:
 
     #----------------------- Sinalização -----------------------
     def controle_sinalizacao(self, dic_functions):
+        '''
+        Verifica se o id de sinalização está pronto para se tornar um ação, avaliando o tipo de sinalização disponível e a que distância está dela
+        recebe a sinalização provinda da função que cria uma máscara dos id's vistos pelo aruco
+        '''
         if dic_functions['sinalizacao'] == 'bifurcacao' and (dic_functions['distancia_frontal'] <= 1.15) and self.FLAG == 'segue_linha':
             print(colored('Bifurcação para a direita - VELOCIDADE!','yellow'))
             print(" - 'Doc Hudson': Antigamente os carros não dirigiam pra ganhar tempo, dirigiam pra aproveitar o tempo.")
@@ -117,6 +140,10 @@ class RosActions:
 
     #---------------------- Movimentação -----------------------
     def organiza_movimentacao(self,dic_functions):
+        '''
+        dependendo da FLAG que está sendo executada, organiza a movimentação do robô e a máscara para a regressão da linha amarela
+        aplica essas variações pelo delta do tempo passado na ação
+        '''
         now = rospy.get_time()
         if self.FLAG == 'bifurcacao':
             if now - self.dic['momento'] > 4:
@@ -138,6 +165,9 @@ class RosActions:
             self.rotacao_odom(dic_functions, 180)
 
     def retorna_odom_sinalizacao(self,dic_functions):
+        '''
+        Função que identifica se o robô voltou à odometria maracada de cada sinalização para realizar a sequência de movimentos necessária para continuar na pista
+        '''
         now = rospy.get_time()
         if self.FLAG == 'retorna_odom_bifurcacao':
             if self.dic['posicao_bifurcacao'][1] - 0.6 < dic_functions['posicao'][1] < self.dic['posicao_bifurcacao'][1] + 0.6:
@@ -161,6 +191,10 @@ class RosActions:
             
     #------------------------ OFF-Road -------------------------
     def retorna_pista(self, posicao0, angulo0):
+        '''
+        Função que orienta o robô depois que saiu da pist principal para ir buscar o creeper e precisa voltar ao ponto de saída
+        Retorna ao ponto de saída por odometria e se indireita com o mesmo ângulo, para continuar a pista sem problemas.
+        '''
         self.dic_functions = self.RosFunctions.get_dic()
 
         objetivo = Point()

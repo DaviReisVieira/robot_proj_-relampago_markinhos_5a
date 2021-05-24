@@ -87,8 +87,8 @@ class RelampagoMarkinhos:
                self.actions.segue_pista()
 
     def missao_conceito_c(self):        
-        # self.actions.segue_pista()  
-        self.cacador_creeper()       
+        self.actions.segue_pista()  
+        #self.cacador_creeper()       
 
         
     def iniciar_missao(self):

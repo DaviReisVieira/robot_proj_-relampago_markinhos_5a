@@ -16,9 +16,15 @@ import tf2_ros
 
 
 class RosFunctions:
+    # Classe que cuidará dos sensores do markinhos, iniciada na classe RelampagoMarkinhos e utilizada na RosActions
 
     ##========================== INIT ==========================##
     def __init__(self):
+        '''
+        função de init da classe
+        Start dos Subscribers (inicialização dos sensores e suas funções de controle)
+        Criação do dicionário de variáveis e a inicialização delas
+        '''
         self.bridge = CvBridge()
         self.dic = {}
 
@@ -53,19 +59,26 @@ class RosFunctions:
 
     ##======================== GETTERS =========================##
     def get_dic(self):
+        # Getter do dicionário da classe
         return self.dic
 
     def get_camera_bgr(self):
+        # Getter da camera em codificação de cores bgr da função "roda_todo_frame"
         return self.camera_bgr
 
     ##======================== SETTERS =========================##
     def set_dic(self,chave,variavel):
+        # Setter da variável do dicionrio para a classe RosActions
         self.dic[chave] = variavel
     
     ##====================== SUBSCRIBERS =======================##
 
     #------------------------- Camera ----------------------------
     def roda_todo_frame(self,imagem):
+        '''
+        função que roda todo o frame enviado pelo robô para ser analisado
+        Responsável por aplicar a regressão da linha amarela, identificar o aruco e orientar a organização da sinalização identificados
+        '''
         try:
             imagem_crua = imagem
             imagem_original = self.bridge.compressed_imgmsg_to_cv2(imagem_crua, "bgr8")
@@ -84,6 +97,10 @@ class RosFunctions:
 
     #-------------------------- Lazer ----------------------------
     def scaneou(self, dado):
+        '''
+        Função que cuida do laser do robô para identificação da distância
+        Salva a distância frontal, 40 graus para a direita e para a esquerda, identificando a menor distância nessas direções
+        '''
         ranges = np.array(dado.ranges).round(decimals=2)
         distancia_frontal = [ranges[357],ranges[358],ranges[359],ranges[0],ranges[1],ranges[2],ranges[3]]
         distancia_lateral_esquerda = [ranges[319],ranges[320], ranges[321]]
@@ -95,6 +112,10 @@ class RosFunctions:
 
     #-------------------------- Odom -----------------------------
     def recebeu_leitura_odometria(self, dado):
+        '''
+        Recebe e organiza a leitura da odometria
+        Salva a posição x e y e o ângulo z em graus
+        '''
         x_odom = dado.pose.pose.position.x
         y_odom = dado.pose.pose.position.y
         quat = dado.pose.pose.orientation
@@ -113,6 +134,10 @@ class RosFunctions:
 
     ##======================= FUNCTIONS ========================##
     def regressao_linha(self):
+        '''
+        Faz a regressão linear da linha tracejada amarela por meio do centro dos traços
+        Utiliza funções salvas no arquivo auxiliar aux.py
+        '''
         mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8))
         
         if self.dic['corte_direita']:
@@ -133,6 +158,9 @@ class RosFunctions:
 
     #-------------------------- Aruco ----------------------------
     def aruco_ids(self, draw_image = False):
+        '''
+        Identifica os ids salvos nos arucos vistos pela camera
+        '''
         img = self.camera_bgr
         if img is not None:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -145,6 +173,7 @@ class RosFunctions:
             cv2.imshow("Original", img)
 
     def identifica_sinais(self):
+        # Função que dos ids identificados, organiza a sinalização da pista
         try:
             for i in self.dic['ids']:
                 if i == 100:
