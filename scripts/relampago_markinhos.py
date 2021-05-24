@@ -40,19 +40,21 @@ class RelampagoMarkinhos:
 
 
         self.functions = RosFunctions()
-        self.garra = Garra()
         self.actions = RosActions(self.functions)
+        self.garra = Garra(self.actions)
 
         self.FLAG = 'segue_pista'        
         self.creeper_atropelado = False
         self.momento_garra = 0
 
+        self.posicao0 = None
+        self.angulo0 = None
+
         self.iniciar_missao() 
     
 
-    def pegar_creeper(self,centro, maior_contorno_area, media): 
+    def pegar_creeper(self,dic_functions,centro, maior_contorno_area, media): 
         print(media,maior_contorno_area)  
-        dic_functions = self.functions.get_dic()
         if dic_functions['distancia_frontal'] < 0.21 and not self.creeper_atropelado:
             print('PARO')
             self.momento_garra = rospy.get_time()
@@ -72,23 +74,27 @@ class RelampagoMarkinhos:
                     
         if self.creeper_atropelado:
             self.actions.set_velocidade()
-            self.garra.capturar_objeto(self.momento_garra)
+            self.garra.capturar_objeto(self.momento_garra,self.posicao0, self.angulo0)
 
     def cacador_creeper(self):
+        dic_functions = self.functions.get_dic()
         img = self.functions.get_camera_bgr()
         if img is not None:
            centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.functions)
            if maior_contorno_area > 700 or self.FLAG == 'pegando_creeper':
+               if self.posicao0 is None:
+                   self.posicao0 = dic_functions["posicao"]
+                   self.angulo0 = dic_functions["ang_odom"]
                self.FLAG = 'pegando_creeper'
-               self.pegar_creeper(centro, maior_contorno_area, media)
+               self.pegar_creeper(dic_functions,centro, maior_contorno_area, media)
            
            if self.FLAG != 'pegando_creeper':
                print('oe2')
                self.actions.segue_pista()
 
     def missao_conceito_c(self):        
-        self.actions.segue_pista()  
-        #self.cacador_creeper()       
+        # self.actions.segue_pista()  
+        self.cacador_creeper()       
 
         
     def iniciar_missao(self):

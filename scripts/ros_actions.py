@@ -209,9 +209,10 @@ class RosActions:
         inc_y = objetivo.y - y
         angle_to_objetivo = atan2(inc_y, inc_x)
         
-        if (objetivo.x - 5 < x < objetivo.x + 5 and objetivo.y - 5 < y < objetivo.y + 5):
+        if (objetivo.x - 2 < x < objetivo.x + 2 and objetivo.y - 2 < y < objetivo.y + 2):
+            print(f"\n{objetivo.x}, {objetivo.y}\n{x}, {y}\n")
             if abs(angle_to_objetivo - theta) < 0.1:
-                self.set_velocidade(0.05, 0.1)
+                self.set_velocidade(0.0, 0.1)
             else:
                 self.set_velocidade(0.3, 0.0)
         else:
