@@ -25,6 +25,7 @@ from std_msgs.msg import Header
 from ros_functions import RosFunctions
 from ros_actions import RosActions
 from garra import Garra
+from estacao import Estacao
 
 from prints import encerrar_missao
 
@@ -39,16 +40,24 @@ class RelampagoMarkinhos:
         self.dic = {}
 
 
-        self.functions = RosFunctions()
+        self.functions = RosFunctions(objetivo)
         self.garra = Garra()
         self.actions = RosActions(self.functions)
+        self.estacao = Estacao(objetivo)
 
         self.FLAG = 'segue_pista'        
         self.creeper_atropelado = False
         self.momento_garra = 0
 
+        self.dic['mobilenet'] = False
+
         self.iniciar_missao() 
-    
+
+
+    ##======================== GETTERS =========================##
+    def get_dic(self):
+        # Getter do dicionário de variáveis desta classe
+        return self.dic
 
     def pegar_creeper(self,centro, maior_contorno_area, media): 
         print(media,maior_contorno_area)  
@@ -86,9 +95,16 @@ class RelampagoMarkinhos:
                print('oe2')
                self.actions.segue_pista()
 
+    def encontrar_estacao(self):
+        img = self.functions.get_camera_bgr()
+        self.dic['mobilenet'] = True
+        self.actions.segue_pista()
+        self.estacao.estacao_objetivo(img)
+
     def missao_conceito_c(self):        
-        self.actions.segue_pista()  
-        #self.cacador_creeper()       
+        # self.actions.segue_pista()  
+        # self.cacador_creeper() 
+        self.encontrar_estacao()      
 
         
     def iniciar_missao(self):
