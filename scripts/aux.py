@@ -11,7 +11,7 @@ import cv2
 from sklearn.linear_model import LinearRegression
 import os
 
-print("Trabalhando em", os.getcwd())
+print("\nCircuito em Uso: ", os.getcwd())
 # -----------------------------------------------------------------------------------------------------------
 # 1----------------------------------------------------------------------------------------------------------
 def hsv_hists(img, plt):
@@ -415,18 +415,13 @@ def text(img, a, p, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX, width=
     return
 # -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------
-def filtrar_cor(bgr, low, high, direita=False):
+def filtrar_cor(bgr, low, high):
     """ Retorna a máscara com o range"""
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     x_center, y_center = hsv.shape[1]//2, hsv.shape[0]//2
     y_max, x_max, _ = hsv.shape
+    mask = cv2.inRange(hsv, low, high)
 
-    if not direita:
-        mask = cv2.inRange(hsv, low, high)
-    else:
-        mask = cv2.inRange(hsv[y_center:y_max, x_center:x_max], low, high)
-
-    cv2.imshow("Mask", mask)
     return mask   
     
 import statsmodels.api as sm
@@ -451,7 +446,6 @@ def ajuste_linear_x_fy(mask):
     coef_angular = results.params[1] # Pegamos o beta 1
     coef_linear =  results.params[0] # Pegamso o beta 0
     return coef_angular, coef_linear, pontos # Pontos foi adicionado para performance, como mencionado no notebook
-
 
 def ajuste_linear_grafico_x_fy(mask_in, print_eq = False): 
     """
@@ -501,15 +495,16 @@ def identifica_cor(frame, cor):
         cor_maior = np.array([8, 255, 255])
 
     bgr = frame.copy()
-    segmentado_cor = aux.make_mask(bgr, cor_menor, cor_maior, kernel=True)
+    segmentado_cor = make_mask(bgr, cor_menor, cor_maior)
     centro = (frame.shape[1]//2, frame.shape[0]//2)
 
-    maior_contorno, maior_contorno_area = aux.encontrar_maior_contorno(segmentado_cor.copy())
-    media = aux.find_center(frame, maior_contorno, centro)
+    maior_contorno, maior_contorno_area = encontrar_maior_contorno(segmentado_cor.copy())
+    media = find_center(frame, maior_contorno, centro)
 
     s1 = "{:d} {:d}".format(*media)
     s2 = "{:0.1f}".format(maior_contorno_area)
-    aux.text(frame, s1, (20, 100))
-    aux.text(frame, s2, (20, 50))
+    # text(frame, s1, (20, 100))
+    # text(frame, s2, (20, 50))
+
 
     return centro, maior_contorno_area, media
