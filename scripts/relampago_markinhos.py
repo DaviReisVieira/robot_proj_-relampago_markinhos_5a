@@ -27,6 +27,7 @@ from ros_actions import RosActions
 from garra import Garra
 
 from prints import encerrar_missao
+from termcolor import colored
 
 class RelampagoMarkinhos:
 
@@ -43,7 +44,7 @@ class RelampagoMarkinhos:
         self.actions = RosActions(self.functions)
         self.garra = Garra(self.actions)
 
-        self.FLAG = 'segue_pista'        
+        self.FLAG = 'segue_pista'      
         self.creeper_atropelado = False
         self.momento_garra = 0
 
@@ -53,44 +54,58 @@ class RelampagoMarkinhos:
         self.iniciar_missao() 
     
 
-    def pegar_creeper(self,dic_functions,centro, maior_contorno_area, media): 
-        print(media,maior_contorno_area)  
-        if dic_functions['distancia_frontal'] < 0.21 and not self.creeper_atropelado:
-            print('PARO')
+    def pegar_creeper(self, dic_functions, centro, maior_contorno_area, media): 
+        v_lin = 0.1
+        print(dic_functions['distancia_frontal'] )
+        if 0.25 < dic_functions['distancia_frontal'] < 0.28:
+            self.garra.abrir_garra()
+
+        if dic_functions['distancia_frontal'] < 0.25:
+            v_lin = 0.04
+
+        if dic_functions['distancia_frontal'] <= 0.16 and not self.creeper_atropelado:
+            print('PAROU')
             self.momento_garra = rospy.get_time()
             self.creeper_atropelado = True
 
         if maior_contorno_area > 700 and not self.creeper_atropelado:
             if len(centro) != 0 and len(media) != 0:
                 if centro[0] -15 < media[0] < centro[0] + 15:
-                    print('oe3')
-                    self.actions.set_velocidade(0.1)
+                    self.actions.set_velocidade(v_lin)
                 else: 
-                    print('oe4')
                     delta_x = centro[0] - media[0]
                     max_delta = 150
-                    w = (delta_x/max_delta)*0.15
-                    self.actions.set_velocidade(0.1,w)
+                    w = (delta_x/max_delta)*0.10
+                    self.actions.set_velocidade(v_lin,w)
                     
         if self.creeper_atropelado:
+            print('oie 5')
             self.actions.set_velocidade()
-            self.garra.capturar_objeto(self.momento_garra,self.posicao0, self.angulo0)
+            self.FLAG = self.garra.capturar_objeto(self.momento_garra)      
+
 
     def cacador_creeper(self):
         dic_functions = self.functions.get_dic()
         img = self.functions.get_camera_bgr()
         if img is not None:
-           centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.functions)
-           if maior_contorno_area > 700 or self.FLAG == 'pegando_creeper':
-               if self.posicao0 is None:
-                   self.posicao0 = dic_functions["posicao"]
-                   self.angulo0 = dic_functions["ang_odom"]
-               self.FLAG = 'pegando_creeper'
-               self.pegar_creeper(dic_functions,centro, maior_contorno_area, media)
+            centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.functions)
+            if (maior_contorno_area > 700 or self.FLAG == 'pegando_creeper') and self.FLAG != 'creeper_capturado':
+                print('oie 1')
+                if self.posicao0 is None:
+                    self.posicao0 = dic_functions["posicao"]
+                    self.angulo0 = dic_functions["ang_odom"]
+                    print(colored(" - 'Relâmpago Markinhos': Localizei o Alvo!","red"))
+                    print('Posição salva: ',self.posicao0,self.angulo0)
+                self.FLAG = 'pegando_creeper'
+                self.pegar_creeper(dic_functions,centro, maior_contorno_area, media)
            
-           if self.FLAG != 'pegando_creeper':
-               print('oe2')
-               self.actions.segue_pista()
+            elif self.FLAG == 'segue_pista':
+                print('oie 2')
+                self.actions.segue_pista()
+
+            elif self.FLAG == 'creeper_capturado':
+                print('oie 3')
+                self.FLAG = self.actions.retorna_pista(self.posicao0, self.angulo0)
 
     def missao_conceito_c(self):        
         # self.actions.segue_pista()  
