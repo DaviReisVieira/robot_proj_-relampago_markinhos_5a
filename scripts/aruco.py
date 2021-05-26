@@ -17,7 +17,9 @@ import sys
 #--- Define Tag de teste
 id_to_find  = 200
 marker_size  = 20 #- [cm]
-#id_to_find  = 22
+#id_def set_velocidade(self, v_lin=0.0, v_ang=0.0):
+        self.velocidade.linear.x = v_lin
+        self.velocidade.angular.z = v_angto_find  = 22
 #marker_size  = 3 #- [cm]
 # 
 
