@@ -30,7 +30,4 @@ class Estacao:
         image = frame.copy()
         result_frame, result_tuples = aux.detect(self.net, image, self.confianca, self.COLORS, self.CLASSES)
         
-        
-        
-        
         cv2.imshow("Mobilenet", result_frame)

@@ -92,7 +92,7 @@ def find_center(frame, maior_contorno, centro):
         e o centro dele. formato: img, x, y
     """
     if not maior_contorno is None :
-        cv2.drawContours(frame, [maior_contorno], -1, [0, 0, 255], 5)
+        cv2.drawContours(frame, [maior_contorno], -1, [0, 0, 0], 5)
         maior_contorno = np.reshape(maior_contorno, (maior_contorno.shape[0], 2))
         media = maior_contorno.mean(axis=0)
         media = media.astype(np.int32)
@@ -132,7 +132,7 @@ def allCircles(bgr, mask, color=(0, 255, 0)):
             # draw the outer circle
             cv2.circle(output,(i[0],i[1]),i[2],color,2)
             # draw the center of the circle
-            cv2.circle(output,(i[0],i[1]),2,(0,0,255),3)
+            cv2.circle(output,(i[0],i[1]),2,(0,0,0),3)
     return circles 
     
 def auto_canny(image, sigma=0.33):

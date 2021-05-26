@@ -13,7 +13,6 @@ from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 from tf import transformations
 from tf import TransformerROS
-import mobilenet_simples as mnet
 import tf2_ros
 
 
@@ -95,9 +94,6 @@ class RosFunctions:
             self.regressao_linha()
             self.aruco_ids(True)
             self.identifica_sinais()
-            #if dic_relampago['mobilenet']:
-            #    self.processa_mobilenet()
-            self.processa_mobilenet()
 
             cv2.waitKey(1)
         except CvBridgeError as e:
@@ -195,8 +191,3 @@ class RosFunctions:
 	        #print("Ocorreu uma erro na leitura dos IDs. Markinhos não passa bem.")
             pass
 
-
-    #------------------------ Mobilenet --------------------------
-    def processa_mobilenet(self, ligado = True):
-        result_frame, result_tuples = mnet.detect(self.camera_bgr)
-        cv2.imshow("Mobilenet", result_frame)
