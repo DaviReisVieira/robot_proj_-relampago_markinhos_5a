@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+#from relampago_markinhos import RelampagoMarkinhos
 import rospy
 import numpy as np
 import math
@@ -12,6 +13,7 @@ from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 from tf import transformations
 from tf import TransformerROS
+import mobilenet_simples as mnet
 import tf2_ros
 
 
@@ -19,7 +21,7 @@ class RosFunctions:
     # Classe que cuidará dos sensores do markinhos, iniciada na classe RelampagoMarkinhos e utilizada na RosActions
 
     ##========================== INIT ==========================##
-    def __init__(self):
+    def __init__(self, objetivo):
         '''
         função de init da classe
         Start dos Subscribers (inicialização dos sensores e suas funções de controle)
@@ -39,6 +41,8 @@ class RosFunctions:
         #self.dic_actions = ros_actions.get_dic()
 
         self.camera_bgr = None
+
+        self.dic['objetivo'] = objetivo
 
         self.dic['corte_direita'] = False
 
@@ -78,7 +82,9 @@ class RosFunctions:
         '''
         função que roda todo o frame enviado pelo robô para ser analisado
         Responsável por aplicar a regressão da linha amarela, identificar o aruco e orientar a organização da sinalização identificados
+        Identifica o mobilenet e calcula a área da estação desejada quando necessário
         '''
+        #dic_relampago = RelampagoMarkinhos.get_dic()
         try:
             imagem_crua = imagem
             imagem_original = self.bridge.compressed_imgmsg_to_cv2(imagem_crua, "bgr8")
@@ -89,6 +95,9 @@ class RosFunctions:
             self.regressao_linha()
             self.aruco_ids(True)
             self.identifica_sinais()
+            #if dic_relampago['mobilenet']:
+            #    self.processa_mobilenet()
+            self.processa_mobilenet()
 
             cv2.waitKey(1)
         except CvBridgeError as e:
@@ -170,7 +179,7 @@ class RosFunctions:
 
             if draw_image:
                 aruco.drawDetectedMarkers(img, corners, ids)
-            cv2.imshow("Original", img)
+            cv2.imshow("Aruco", img)
 
     def identifica_sinais(self):
         # Função que dos ids identificados, organiza a sinalização da pista
@@ -185,3 +194,9 @@ class RosFunctions:
         except Exception:
 	        #print("Ocorreu uma erro na leitura dos IDs. Markinhos não passa bem.")
             pass
+
+
+    #------------------------ Mobilenet --------------------------
+    def processa_mobilenet(self, ligado = True):
+        result_frame, result_tuples = mnet.detect(self.camera_bgr)
+        cv2.imshow("Mobilenet", result_frame)
