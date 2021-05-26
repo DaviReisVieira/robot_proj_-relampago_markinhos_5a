@@ -4,7 +4,7 @@ import numpy as np
 import tf
 import aux
 import cv2
-from math import atan2
+from math import atan2, degrees
 from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped, Point
 from std_msgs.msg import Float64
 from termcolor import colored
@@ -34,6 +34,9 @@ class RosActions:
         self.dic['posicao_rotatoria'] = [0,0]
         self.dic['angulo_salvo'] = 0
         self.em_rotatoria = True
+
+        self.chegou = False
+        self.ready = False
 
     ##======================== GETTERS =========================##
     def get_dic(self):
@@ -197,26 +200,46 @@ class RosActions:
         Retorna ao ponto de saída por odometria e se indireita com o mesmo ângulo, para continuar a pista sem problemas.
         '''
         self.dic_functions = self.RosFunctions.get_dic()
-
-        objetivo = Point()
-        objetivo.x = posicao0[0]
-        objetivo.y = posicao0[1]
-
+        goal = Point()
+        goal.x = posicao0[0]
+        goal.y = posicao0[1]
         x, y = self.dic_functions["posicao"]
-        theta = angulo0
 
-        inc_x = objetivo.x - x
-        inc_y = objetivo.y - y
-        angle_to_objetivo = atan2(inc_y, inc_x)
-        
-        if (objetivo.x - 5 < x < objetivo.x + 5 and objetivo.y - 5 < y < objetivo.y + 5):
-            if abs(angle_to_objetivo - theta) < 0.1:
-                self.set_velocidade(0.05, 0.1)
+        dist = np.sqrt((goal.x - x)**2 + (goal.y - y)**2)
+
+        inc_x = goal.x - x
+        inc_y = goal.y - y
+
+        theta = self.dic_functions["ang_odom"]
+        angle_to_goal = degrees(atan2(inc_y, inc_x))
+        print(f"angle_to_goal: {angle_to_goal}2\ntheta:{theta}")
+
+        if dist <= 0.2:
+            self.set_velocidade() 
+            self.chegou = True
+        if not self.chegou:
+            if abs(angle_to_goal - theta) > 5 and (theta - angle_to_goal) < 0 and dist > 0.2:
+                self.set_velocidade(0, 0.3)
+            elif abs(angle_to_goal - theta) > 5 and (theta - angle_to_goal) > 0 and dist > 0.2:
+                self.set_velocidade(0, -0.3)
             else:
-                self.set_velocidade(0.3, 0.0)
-        else:
-            self.FLAG = "segue_linha"
-            
+                self.set_velocidade(0.23, 0.0)
+        if self.chegou:
+            if (theta - angulo0 <= 0) and not self.ready:
+                self.set_velocidade(0, 0.3)
+                if angulo0 - 0.5 < theta < angulo0 +0.5:
+                    self.ready = True
+            elif (theta - angulo0 > 0) and not self.ready:
+                self.set_velocidade(0, -0.3)
+                if angulo0 - 0.5 < theta < angulo0 +0.5:
+                    self.ready = True
+            elif self.ready:
+                self.set_velocidade()
+                return 'segue_pista'        
+        return 'creeper_capturado'
+
+
+        
         
 
         
