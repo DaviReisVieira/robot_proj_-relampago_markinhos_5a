@@ -21,10 +21,10 @@ class Garra:
         now = rospy.get_time()
         if not self.comecou_garra:
             self.comecou_garra = True
-        elif now - momento < 2.5:
+        elif now - momento < 2.0:
             self.garra.publish(0.0)  ## Fechado   
             print('Fecha garra')
-        elif 2.5 <= now - momento < 3.5:
+        elif 2.0 <= now - momento < 3.0:
             self.ombro.publish(1.5)  ## Levanta
             print('levanta ombro')
         else:

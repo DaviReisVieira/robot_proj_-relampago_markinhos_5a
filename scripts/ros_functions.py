@@ -143,7 +143,7 @@ class RosFunctions:
         Faz a regressão linear da linha tracejada amarela por meio do centro dos traços
         Utiliza funções salvas no arquivo auxiliar aux.py
         '''
-        mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8))
+        mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([32, 255, 255], dtype=np.uint8), True)
         
         if self.dic['corte_direita']:
             img, centro_amarelo = aux.regiao_centro_de_massa(mask, mask.shape[1]//2, 0, mask.shape[1], mask.shape[0])  

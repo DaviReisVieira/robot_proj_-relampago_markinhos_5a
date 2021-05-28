@@ -18,7 +18,12 @@ missao_3 = ("orange", 11, "cow")
 
 # Coloque na Variável 'OBJETIVO' qual Missão você deseja realizar!
 OBJETIVO = missao_1
+
 # Caso queira testar o Conceito C, mude para True a variável 'CONCEITO_C'
 CONCEITO_C = True
+
+# Caso queira testar o Conceito C (Apenas rodar a pista toda), mude para True a variável 'CONCEITO_C'
+SOMENTE_PISTA = False
+
 # Para desligar as prints iniciais, mude 'PRINTS_INICIAIS' para False
 PRINTS_INICIAIS = True

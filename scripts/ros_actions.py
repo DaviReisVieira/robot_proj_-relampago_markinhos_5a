@@ -86,15 +86,16 @@ class RosActions:
             centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.RosFunctions)
             print(dic_functions['distancia_frontal'])
             if not self.creeper_atropelado:
+                # v_lin = 
                 if 0.25 < dic_functions['distancia_frontal'] < 0.28:
                     v_lin = 0.07
 
                 if dic_functions['distancia_frontal'] < 0.24:
                     self.garra.abrir_garra()
                     self.creeper_centralizado = True
-                    v_lin = 0.04
+                    v_lin = 0.03
 
-                if dic_functions['distancia_frontal'] <= 0.17:
+                if dic_functions['distancia_frontal'] <= 0.16:
                     print('PAROU PARA PEGAR O CREEPER')
                     self.momento_garra = rospy.get_time()
                     self.creeper_atropelado = True
@@ -135,8 +136,7 @@ class RosActions:
 
     def encontrar_estacao(self):
         img = self.RosFunctions.get_camera_bgr()
-        self.dic['mobilenet'] = True
-        self.actions.segue_pista()
+        self.segue_pista()
         self.estacao.estacao_objetivo(img)
 
     ##======================= FUNCTIONS ========================##
@@ -200,7 +200,6 @@ class RosActions:
             print(colored('Retorno! - Marty avisou pelo rádio do perigo em frente!','yellow'))
             print(colored(" - 'Relâmpago Markinhos': Caramba Marty, essa foi por pouco!","red"))
             self.FLAG = 'retorna'
-            print('retorna')
             self.dic['angulo_salvo'] = dic_functions['ang_odom']
         elif dic_functions['sinalizacao'] == 'rotatoria' and (dic_functions['distancia_frontal'] <= 0.7) and self.FLAG == 'segue_linha':
             print(colored('Entrando no circuito oval!','yellow'))
@@ -282,23 +281,24 @@ class RosActions:
         inc_y = goal.y - y
 
         theta = self.dic_functions["ang_odom"]
-        theta_calculado = degrees(atan2(inc_y, inc_x))
-        if theta_calculado < 0:
-            angle_to_goal = 360 + theta_calculado
-        elif theta_calculado > 360:
-            angle_to_goal = theta_calculado - 360
-        else:
-            angle_to_goal = theta_calculado
-        print(f"angle to goal: {angle_to_goal}2\nrobot angle:{theta}")
+        angle_to_goal = degrees(atan2(inc_y, inc_x))
+        if angle_to_goal > 360:
+            angle_to_goal -= 360
+        elif angle_to_goal < 0:
+            angle_to_goal += 360
+        
+        dif_abs = abs(angle_to_goal - theta)
+
+        print(f"angle to goal: {angle_to_goal}\nrobot angle:{theta}")
 
         if dist <= 0.2:
             self.set_velocidade() 
             self.chegou = True
         if not self.chegou:
             if abs(angle_to_goal - theta) > 5 and (theta - angle_to_goal) < 0 and dist > 0.2:
-                self.set_velocidade(0, 0.3)
+                self.set_velocidade(0, 0.17)
             elif abs(angle_to_goal - theta) > 5 and (theta - angle_to_goal) > 0 and dist > 0.2:
-                self.set_velocidade(0, -0.3)
+                self.set_velocidade(0, -0.17)
             else:
                 self.set_velocidade(0.23, 0.0)
         if self.chegou:

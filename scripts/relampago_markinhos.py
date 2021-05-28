@@ -31,7 +31,7 @@ from termcolor import colored
 
 class RelampagoMarkinhos:
 
-    def __init__(self, objetivo, creeper, estacao, conceitoC = False):
+    def __init__(self, objetivo, creeper, estacao, conceitoC = False, somente_pista = False):
         '''
         dasdfasd
         '''
@@ -39,6 +39,7 @@ class RelampagoMarkinhos:
 
         self.objetivo = objetivo
         self.conceitoC = conceitoC
+        self.somente_pista = somente_pista
         self.creeper = creeper
         self.estacao = estacao
         self.dic = {}
@@ -90,13 +91,16 @@ class RelampagoMarkinhos:
             if self.Resultado == 'retornou':
                 if self.missao == 'creeper':
                     if self.conceitoC:
-                        self.FLAG = 'procurando_creeper'
+                        self.FLAG = 'seguir_pista'
                     else:
                         self.FLAG = 'procurando_estacao'
                         self.missao = 'estacao'
                 elif self.missao == 'estacao':
                     self.FLAG = 'procurando_creeper'
                     self.missao = 'creeper'
+
+        elif self.FLAG == 'seguir_pista':
+            self.actions.segue_pista()
 
         ####### Repete ########
 
@@ -107,7 +111,11 @@ class RelampagoMarkinhos:
         '''
         try: 
             while not rospy.is_shutdown():
-                self.controle()
+                # if self.somente_pista:
+                #     self.actions.segue_pista()
+                # else:
+                #     self.controle()
+                self.actions.encontrar_estacao()
             rospy.sleep(0.01)
 
         except rospy.ROSInterruptException:

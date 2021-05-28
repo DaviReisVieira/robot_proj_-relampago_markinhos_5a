@@ -18,16 +18,17 @@ class Estacao:
         proto = os.path.join(scripts,"MobileNetSSD_deploy.prototxt.txt")
         model = os.path.join(scripts, "MobileNetSSD_deploy.caffemodel")
 
-        self.net = cv2.dnn.readNetFromCaffe(proto, model)
+        self.NET = cv2.dnn.readNetFromCaffe(proto, model)
         self.CLASSES = aux.mobilenet_classes()
-        self.confianca = 0.2
+        self.CONFIDENCE = 0.2
         self.COLORS = np.random.uniform(0, 255, size=(len(self.CLASSES), 3))
 
         self.objetivo = objetivo
 
 
     def estacao_objetivo(self, frame):
-        image = frame.copy()
-        result_frame, result_tuples = aux.detect(self.net, image, self.confianca, self.COLORS, self.CLASSES)
+        if frame is not None:
+            image = frame.copy()
+            result_frame, result_tuples = aux.detect(self.NET, image, self.CONFIDENCE, self.COLORS, self.CLASSES)
         
-        cv2.imshow("Mobilenet", result_frame)
+            cv2.imshow("Mobilenet", result_frame)

@@ -17,7 +17,7 @@ def logo_relampago_markinhos(objetivo, ativar_todos = False):
         sinal_on = False
         agradecimentos_on = True
 
-    # playsound("sinal_markinhos.mp3")
+    # playsound("/home/borg/catkin_ws/src/robot_proj_-relampago_markinhos_5a/scripts/som_sinal.mp3")
 
     if markinhos_on:
         print("\n\n")
