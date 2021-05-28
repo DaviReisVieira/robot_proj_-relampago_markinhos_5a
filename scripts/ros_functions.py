@@ -13,7 +13,6 @@ from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 from tf import transformations
 from tf import TransformerROS
-import mobilenet_simples as mnet
 import tf2_ros
 
 
@@ -95,9 +94,6 @@ class RosFunctions:
             self.regressao_linha()
             self.aruco_ids(True)
             self.identifica_sinais()
-            #if dic_relampago['mobilenet']:
-            #    self.processa_mobilenet()
-            self.processa_mobilenet()
 
             cv2.waitKey(1)
         except CvBridgeError as e:
@@ -147,7 +143,7 @@ class RosFunctions:
         Faz a regressão linear da linha tracejada amarela por meio do centro dos traços
         Utiliza funções salvas no arquivo auxiliar aux.py
         '''
-        mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([36, 255, 255], dtype=np.uint8))
+        mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([32, 255, 255], dtype=np.uint8), True)
         
         if self.dic['corte_direita']:
             img, centro_amarelo = aux.regiao_centro_de_massa(mask, mask.shape[1]//2, 0, mask.shape[1], mask.shape[0])  
@@ -195,8 +191,3 @@ class RosFunctions:
 	        #print("Ocorreu uma erro na leitura dos IDs. Markinhos não passa bem.")
             pass
 
-
-    #------------------------ Mobilenet --------------------------
-    def processa_mobilenet(self, ligado = True):
-        result_frame, result_tuples = mnet.detect(self.camera_bgr)
-        cv2.imshow("Mobilenet", result_frame)

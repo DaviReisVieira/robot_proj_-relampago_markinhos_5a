@@ -4,8 +4,7 @@ from std_msgs.msg import Float64
 import aux
 
 class Garra:
-    def __init__(self,actions):
-        self.actions=actions
+    def __init__(self):
         self.comecou_garra = False
         self.ombro = rospy.Publisher("/joint1_position_controller/command", Float64, queue_size=1)
         self.garra = rospy.Publisher("/joint2_position_controller/command", Float64, queue_size=1)
@@ -22,14 +21,14 @@ class Garra:
         now = rospy.get_time()
         if not self.comecou_garra:
             self.comecou_garra = True
-        elif now - momento < 2.5:
+        elif now - momento < 2.0:
             self.garra.publish(0.0)  ## Fechado   
             print('Fecha garra')
-        elif 2.5 <= now - momento < 3.5:
+        elif 2.0 <= now - momento < 3.0:
             self.ombro.publish(1.5)  ## Levanta
             print('levanta ombro')
         else:
-            return 'creeper_capturado'  
+            return 'pegou_creeper'  
         return 'pegando_creeper' 
         
     def soltar_objeto(self, momento):
