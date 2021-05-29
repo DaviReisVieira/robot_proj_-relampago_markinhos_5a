@@ -4,7 +4,7 @@ from __future__ import division, print_function
 import numpy as np
 import argparse
 import cv2
-import aux
+import auxiliar as aux
 
 import rospkg
 import os

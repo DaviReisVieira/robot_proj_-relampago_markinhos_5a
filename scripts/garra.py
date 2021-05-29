@@ -1,7 +1,7 @@
 import rospy
 from std_msgs.msg import Float64
 
-import aux
+import auxiliar as aux
 
 class Garra:
     def __init__(self):
