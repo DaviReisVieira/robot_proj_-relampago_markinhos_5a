@@ -23,7 +23,7 @@ OBJETIVO = missao_1
 CONCEITO_C = True
 
 # Caso queira testar o Conceito C (Apenas rodar a pista toda), mude para True a variável 'CONCEITO_C'
-SOMENTE_PISTA = False
+SOMENTE_PISTA = True
 
 # Para desligar as prints iniciais, mude 'PRINTS_INICIAIS' para False
 PRINTS_INICIAIS = True

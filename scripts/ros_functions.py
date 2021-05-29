@@ -16,6 +16,7 @@ from tf import TransformerROS
 import tf2_ros
 
 
+
 class RosFunctions:
     # Classe que cuidará dos sensores do markinhos, iniciada na classe RelampagoMarkinhos e utilizada na RosActions
 
@@ -27,7 +28,8 @@ class RosFunctions:
         Criação do dicionário de variáveis e a inicialização delas
         '''
         self.bridge = CvBridge()
-        self.dic = {}
+        self.dict = {}
+        self.dict_ids = {}
 
         self.recebedor = rospy.Subscriber("/camera/image/compressed", CompressedImage, self.roda_todo_frame, queue_size=4, buff_size=2**24)
         self.recebe_scan = rospy.Subscriber("/scan", LaserScan, self.scaneou)
@@ -36,34 +38,48 @@ class RosFunctions:
         self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
 
 
-        #self.dic_relampago = relampago_markinhos.get_dic()
-        #self.dic_actions = ros_actions.get_dic()
+        #self.dict_relampago = relampago_markinhos.get_dic()
+        #self.dict_actions = ros_actions.get_dic()
 
         self.camera_bgr = None
 
-        self.dic['objetivo'] = objetivo
+        self.dict['objetivo'] = objetivo
 
-        self.dic['corte_direita'] = False
+        self.dict['corte_direita'] = False
 
-        self.dic['centro_imagem'] = (0,0)
-        self.dic['distancia_frontal'] = 100
-        self.dic['distancia_lateral_esquerda'] = 100
-        self.dic['distancia_lateral_direita'] = 100
-        self.dic['posicao'] = [0, 0]
-        self.dic['ang_odom'] = 0
-        self.dic['ang_amarelo'] = 0
-        self.dic['centro_x_amarelo'] = 320
-        self.dic['ids'] = []
-        self.dic['sinalizacao'] = 'nenhuma'
-        self.dic['passou_bifurcacao'] = False
+        self.dict['centro_imagem'] = (0,0)
+        self.dict['distancia_frontal'] = 100
+        self.dict['distancia_lateral_esquerda'] = 100
+        self.dict['distancia_lateral_direita'] = 100
+        self.dict['posicao'] = [0, 0]
+        self.dict['ang_odom'] = 0
+        self.dict['ang_amarelo'] = 0
+        self.dict['centro_x_amarelo'] = 320
+        self.dict['ids'] = []
+        self.dict['sinalizacao'] = 'nenhuma'
+        self.dict['passou_bifurcacao'] = False
+        self.dict_ids["centro_id"] = (0, 0)
+        self.dict["id"] = 12
+        self.dict['distancia_aruco'] = 100000
+
+
+        self.ids = []
         
-        
+        self.marker_size = 20
+
+        self.calib_path  = "/home/borg/catkin_ws/src/robot202/ros/exemplos202/scripts/"
+        self.camera_matrix   = np.loadtxt(self.calib_path+'cameraMatrix_raspi.txt', delimiter=',')
+        self.camera_distortion   = np.loadtxt(self.calib_path+'cameraDistortion_raspi.txt', delimiter=',')
 
 
     ##======================== GETTERS =========================##
     def get_dic(self):
         # Getter do dicionário da classe
-        return self.dic
+        return self.dict
+
+    def get_dic_ids(self):
+        # Getter do dicionário da classe
+        return self.dict_ids
 
     def get_camera_bgr(self):
         # Getter da camera em codificação de cores bgr da função "roda_todo_frame"
@@ -72,7 +88,7 @@ class RosFunctions:
     ##======================== SETTERS =========================##
     def set_dic(self,chave,variavel):
         # Setter da variável do dicionrio para a classe RosActions
-        self.dic[chave] = variavel
+        self.dict[chave] = variavel
     
     ##====================== SUBSCRIBERS =======================##
 
@@ -89,8 +105,8 @@ class RosFunctions:
             imagem_original = self.bridge.compressed_imgmsg_to_cv2(imagem_crua, "bgr8")
             self.camera_bgr = imagem_original
 
-            self.dic['centro_imagem'] = (self.camera_bgr.shape[1]//2,self.camera_bgr.shape[0]//2)
-
+            self.dict['centro_imagem'] = (self.camera_bgr.shape[1]//2,self.camera_bgr.shape[0]//2)
+            
             self.regressao_linha()
             self.aruco_ids(True)
             self.identifica_sinais()
@@ -110,9 +126,9 @@ class RosFunctions:
         distancia_frontal = [ranges[357],ranges[358],ranges[359],ranges[0],ranges[1],ranges[2],ranges[3]]
         distancia_lateral_esquerda = [ranges[319],ranges[320], ranges[321]]
         distancia_lateral_direita = [ranges[39],ranges[40],ranges[41]]
-        self.dic['distancia_frontal'] = min(distancia_frontal)
-        self.dic['distancia_lateral_esquerda'] = min(distancia_lateral_esquerda)
-        self.dic['distancia_lateral_direita'] = min(distancia_lateral_direita)
+        self.dict['distancia_frontal'] = min(distancia_frontal)
+        self.dict['distancia_lateral_esquerda'] = min(distancia_lateral_esquerda)
+        self.dict['distancia_lateral_direita'] = min(distancia_lateral_direita)
 
 
     #-------------------------- Odom -----------------------------
@@ -133,8 +149,8 @@ class RosFunctions:
             ang_odom = angulos[2]
 
         #print('posicao x:', self.x_odom, ',  posixao y', self.y_odom)
-        self.dic['posicao'] = [x_odom, y_odom]
-        self.dic['ang_odom'] = ang_odom
+        self.dict['posicao'] = [x_odom, y_odom]
+        self.dict['ang_odom'] = ang_odom
 
 
     ##======================= FUNCTIONS ========================##
@@ -145,7 +161,7 @@ class RosFunctions:
         '''
         mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([32, 255, 255], dtype=np.uint8), True)
         
-        if self.dic['corte_direita']:
+        if self.dict['corte_direita']:
             img, centro_amarelo = aux.regiao_centro_de_massa(mask, mask.shape[1]//2, 0, mask.shape[1], mask.shape[0])  
         else:
             img, centro_amarelo = aux.regiao_centro_de_massa(mask, 0, 300, mask.shape[1], mask.shape[0])  
@@ -155,8 +171,8 @@ class RosFunctions:
         ang = math.atan(m)
         ang_deg = math.degrees(ang)
 
-        self.dic['ang_amarelo'] = ang_deg
-        self.dic['centro_x_amarelo'] = centro_amarelo[0]
+        self.dict['ang_amarelo'] = ang_deg
+        self.dict['centro_x_amarelo'] = centro_amarelo[0]
 
         cv2.imshow("Filtro", img)
         # cv2.imshow("Regressão", saida_bgr)
@@ -169,25 +185,54 @@ class RosFunctions:
         img = self.camera_bgr
         if img is not None:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.aruco_dict)
-            
-            self.dic['ids'] = np.array(ids).flatten()
+            self.corners, self.ids, rejectedImgPoints = aruco.detectMarkers(gray, self.aruco_dict)
 
             if draw_image:
-                aruco.drawDetectedMarkers(img, corners, ids)
+                aruco.drawDetectedMarkers(img, self.corners, self.ids)
             cv2.imshow("Aruco", img)
+
+            self.dict['ids'] = np.array(self.ids)
+            
+            # self.centro_aruco()
+            # self.distancia_aruco()
+                
+            
+
 
     def identifica_sinais(self):
         # Função que dos ids identificados, organiza a sinalização da pista
         try:
-            for i in self.dic['ids']:
+            for i in self.dict['ids']:
                 if i == 100:
-                    self.dic['sinalizacao'] = 'bifurcacao'
+                    self.dict['sinalizacao'] = 'bifurcacao'
                 elif i == 200:
-                    self.dic['sinalizacao'] = 'rotatoria'
-                elif (i == 50 or i == 150) and (self.dic['sinalizacao'] != 'bifurcacao' or self.dic['passou_bifurcacao']):
-                    self.dic['sinalizacao'] = 'retorna'
+                    self.dict['sinalizacao'] = 'rotatoria'
+                elif (i == 50 or i == 150) and (self.dict['sinalizacao'] != 'bifurcacao' or self.dict['passou_bifurcacao']):
+                    self.dict['sinalizacao'] = 'retorna'
         except Exception:
 	        #print("Ocorreu uma erro na leitura dos IDs. Markinhos não passa bem.")
             pass
 
+    def centro_aruco(self):
+        if self.ids is not None:
+            if self.dict['id'] in self.ids:
+                i = list(self.ids).index(self.dict['id'])
+                p1, p2 = (np.array(self.corners[i][0][0], dtype=np.uint8), np.array(self.corners[i][0][2], dtype=np.uint8))
+                centro = ((p2[0] + p1[0])//2, (p2[1] + p1[1])//2)
+                print(centro)
+                    
+        
+
+    def distancia_aruco(self):
+        self.dict['distancia_aruco'] = 100000
+        if self.ids is not None:
+            if self.dict['id'] in self.ids:
+                i = list(self.ids).index(self.dict['id'])
+                ret = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_size, self.camera_matrix, self.camera_distortion)
+                rvec, self.tvec = ret[0][0,0,:], ret[1][0,0,:]
+                self.dict['distancia_aruco'] = np.sqrt(self.tvec[0]**2 + self.tvec[1]**2 + self.tvec[2]**2)
+
+
+            #-- Print distance
+            str_dist = "Dist aruco = {0:.4f}".format(self.dict['distancia_aruco'])
+            print(str_dist)
