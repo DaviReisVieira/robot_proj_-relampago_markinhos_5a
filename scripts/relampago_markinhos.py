@@ -42,7 +42,7 @@ class RelampagoMarkinhos:
         self.somente_pista = somente_pista
         self.creeper = creeper
         self.estacao = estacao
-        self.dic = {}
+        self.dict = {}
 
 
         self.functions = RosFunctions(objetivo)
@@ -111,11 +111,11 @@ class RelampagoMarkinhos:
         '''
         try: 
             while not rospy.is_shutdown():
-                # if self.somente_pista:
-                #     self.actions.segue_pista()
-                # else:
-                #     self.controle()
-                self.actions.encontrar_estacao()
+                if self.somente_pista:
+                    self.actions.segue_pista()
+                else:
+                    self.controle()
+                # self.actions.encontrar_estacao()
             rospy.sleep(0.01)
 
         except rospy.ROSInterruptException:

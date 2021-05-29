@@ -23,10 +23,10 @@ class Garra:
             self.comecou_garra = True
         elif now - momento < 2.0:
             self.garra.publish(0.0)  ## Fechado   
-            print('Fecha garra')
+            # print('Fecha garra')
         elif 2.0 <= now - momento < 3.0:
             self.ombro.publish(1.5)  ## Levanta
-            print('levanta ombro')
+            # print('levanta ombro')
         else:
             return 'pegou_creeper'  
         return 'pegando_creeper' 
