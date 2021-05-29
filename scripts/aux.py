@@ -1,9 +1,9 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-ss
 '''
-@author: NicolasQueiroga, fran-janela, DaviReis
+@author: NicolasQueiroga, fran-janela, DaviReisVieira
 '''
 
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 import numpy as np
 import cv2
@@ -22,11 +22,10 @@ def filtrar_cor(bgr, low, high, kernel=False):
     if kernel:
         kernel_final = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(6,6))
         mask = cv2.morphologyEx( mask, cv2.MORPH_OPEN, kernel_final )
-        #mask = cv2.morphologyEx( mask, cv2.MORPH_CLOSE, kernel_final )
 
     return mask 
 
-        
+
 def encontrar_contornos(mask):
     '''
         Não mude ou renomeie esta função
@@ -101,18 +100,6 @@ def mobilenet_classes():
                 "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
                 "sofa", "train", "tvmonitor" ]
     return CLASSES
-
-def load_mobilenet():
-    '''
-    Carrega o modelo e os parametros da MobileNet. Retorna a classe da rede.
-    Não mude ou renomeie esta função
-    '''
-    proto = "MobileNetSSD_deploy.prototxt.txt" 
-    model = "MobileNetSSD_deploy.caffemodel"
-
-    rede = cv2.dnn.readNetFromCaffe(proto, model)
-
-    return rede
 
 
 def detect(net, frame, CONFIDENCE, COLORS, CLASSES):
