@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 import math
 import tf
-import aux
+import auxiliar as aux
 import cv2
 import cv2.aruco as aruco
 from nav_msgs.msg import Odometry
@@ -106,7 +106,7 @@ class RosFunctions:
             self.camera_bgr = imagem_original
 
             self.dict['centro_imagem'] = (self.camera_bgr.shape[1]//2,self.camera_bgr.shape[0]//2)
-            
+
             self.regressao_linha()
             self.aruco_ids(True)
             self.identifica_sinais()

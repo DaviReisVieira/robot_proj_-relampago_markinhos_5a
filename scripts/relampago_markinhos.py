@@ -5,7 +5,7 @@ from __future__ import print_function, division
 import rospy
 import numpy as np
 import tf
-import aux
+import auxiliar as aux
 import math
 from math import pi
 import cv2
