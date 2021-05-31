@@ -1,4 +1,4 @@
-import aux
+import auxiliar as aux
 
 class Creeper:
     def __init__(self, cor, codigo):

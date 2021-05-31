@@ -3,6 +3,18 @@ import time
 from termcolor import colored
 # from playsound import playsound
 
+def configs():
+    print("\n\n")
+    print(colored("##========================================================================##","yellow"))
+    print(colored("#                       __ _                            /\/|               #","yellow"))
+    print(colored("#                      / _(_)                          |/\/                #","yellow"))
+    print(colored("#       ___ ___  _ __ | |_ _  __ _ _   _ _ __ __ _  ___ ___   ___  ___     #","yellow"))
+    print(colored("#      / __/ _ \| '_ \|  _| |/ _` | | | | '__/ _` |/ __/ _ \ / _ \/ __|    #","yellow"))
+    print(colored("#     | (_| (_) | | | | | | | (_| | |_| | | | (_| | (_| (_) |  __/\__ \    #","yellow"))
+    print(colored("#      \___\___/|_| |_|_| |_|\__, |\__,_|_|  \__,_|\___\___/ \___||___/    #","yellow"))
+    print(colored("#                             __/ |                 )_)                    #","yellow"))
+    print(colored("#                            |___/                                         #","yellow"))
+    print(colored("##========================================================================##","yellow"))
 
 def logo_relampago_markinhos(objetivo, ativar_todos = False):
     insper_on = False

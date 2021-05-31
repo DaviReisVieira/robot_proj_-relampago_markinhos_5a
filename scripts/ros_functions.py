@@ -59,8 +59,9 @@ class RosFunctions:
         self.dict['sinalizacao'] = 'nenhuma'
         self.dict['passou_bifurcacao'] = False
         self.dict_ids["centro_id"] = (0, 0)
-        self.dict["id"] = 12
+        self.dict["id"] = objetivo[1]
         self.dict['distancia_aruco'] = 100000
+        self.dict['centro_aruco'] = [1000,1000]
 
 
         self.ids = []
@@ -188,13 +189,14 @@ class RosFunctions:
             self.corners, self.ids, rejectedImgPoints = aruco.detectMarkers(gray, self.aruco_dict)
 
             if draw_image:
-                aruco.drawDetectedMarkers(img, self.corners, self.ids)
-            cv2.imshow("Aruco", img)
+                bgr = img.copy()
+                aruco.drawDetectedMarkers(bgr, self.corners, self.ids)
+                cv2.imshow("Aruco", bgr)
 
             self.dict['ids'] = np.array(self.ids)
             
-            # self.centro_aruco()
-            # self.distancia_aruco()
+            self.centro_aruco()
+            self.distancia_aruco()
                 
             
 
@@ -214,12 +216,14 @@ class RosFunctions:
             pass
 
     def centro_aruco(self):
+        self.dict['centro_aruco'] = [1000,1000]
         if self.ids is not None:
             if self.dict['id'] in self.ids:
                 i = list(self.ids).index(self.dict['id'])
-                p1, p2 = (np.array(self.corners[i][0][0], dtype=np.uint8), np.array(self.corners[i][0][2], dtype=np.uint8))
-                centro = ((p2[0] + p1[0])//2, (p2[1] + p1[1])//2)
-                print(centro)
+                p1, p2 = (np.array(self.corners[i][0][0]), np.array(self.corners[i][0][2]))
+                # print(p1,p2)
+                self.dict['centro_aruco'] = ((p2[0] + p1[0])/2, (p2[1] + p1[1])/2)
+                # print(self.dict['centro_aruco'])
                     
         
 
@@ -231,8 +235,4 @@ class RosFunctions:
                 ret = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_size, self.camera_matrix, self.camera_distortion)
                 rvec, self.tvec = ret[0][0,0,:], ret[1][0,0,:]
                 self.dict['distancia_aruco'] = np.sqrt(self.tvec[0]**2 + self.tvec[1]**2 + self.tvec[2]**2)
-
-
-            #-- Print distance
-            str_dist = "Dist aruco = {0:.4f}".format(self.dict['distancia_aruco'])
-            print(str_dist)
+                # print(self.dict['distancia_aruco'])

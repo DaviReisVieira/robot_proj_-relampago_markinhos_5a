@@ -48,6 +48,11 @@ class RosActions:
         self.chegou = False
         self.ready = False
 
+        self.Procurando_estacao = True
+        self.dist_inicial = 0.0
+        self.aproximou_estacao = False
+        self.largou_creeper = False
+
     ##======================== GETTERS =========================##
     def get_dic(self):
         # Getter do dicionário de variáveis desta classe
@@ -80,19 +85,24 @@ class RosActions:
 
 
     def procurando_creeper(self):
-        dic_functions = self.RosFunctions.get_dic()
+        dict_functions = self.RosFunctions.get_dic()
+        # print(dict_functions['distancia_aruco'])
         img = self.RosFunctions.get_camera_bgr()
         if img is not None:
-            centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.RosFunctions)
-            if (maior_contorno_area > 700) and self.Procurando:
-                if self.posicao0 is None:
-                    self.posicao0 = dic_functions["posicao"]
-                    self.angulo0 = dic_functions["ang_odom"]
-                    print(colored('Creeper! - Marty avisou pelo rádio que o Creeper à frente é o objetivo!','yellow'))
-                    print(colored(" - 'Relâmpago Markinhos': Localizei o Alvo!","red"))
-                    print('Esta é minha última posição no GPS: ',self.posicao0, ' e o ângulo que eu estava: ' ,self.angulo0)
-                    self.dict['resultado'] = 'encontrou_creeper'
-                    self.Procurando = False
+            if dict_functions['distancia_aruco'] < 750 and self.Procurando: 
+                # print('distancia ok')
+                centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.RosFunctions)
+                # print(media)
+                if abs(media[0] - dict_functions['centro_aruco'][0]) < 20:
+                    # print('centro ok')
+                    if self.posicao0 is None:
+                        self.posicao0 = dict_functions["posicao"]
+                        self.angulo0 = dict_functions["ang_odom"]
+                        print(colored('Creeper! - Marty avisou pelo rádio que o Creeper à frente é o objetivo!','yellow'))
+                        print(colored(" - 'Relâmpago Markinhos': Localizei o Alvo!","red"))
+                        print('Esta é minha última posição no GPS: ',self.posicao0, ' e o ângulo que eu estava: ' ,self.angulo0)
+                        self.dict['resultado'] = 'encontrou_creeper'
+                        self.Procurando = False
             elif self.Procurando:
                 self.segue_pista()
 
@@ -104,15 +114,15 @@ class RosActions:
         if img is not None:
             centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.RosFunctions)
             if not self.creeper_atropelado:
-                if 0.25 < dic_functions['distancia_frontal'] < 0.28:
-                    v_lin = 0.07
+                if 0.22 <= dic_functions['distancia_frontal'] < 0.28:
+                    v_lin = 0.05
 
                 if dic_functions['distancia_frontal'] < 0.22:
                     self.garra.abrir_garra()
                     self.creeper_centralizado = True
                     v_lin = 0.02
 
-                if dic_functions['distancia_frontal'] <= 0.15:
+                if dic_functions['distancia_frontal'] <= 0.16:
                     print(colored(" - 'Relâmpago Markinhos': Vou pegar nosso Creeper! Katchau!","red"))
                     self.momento_garra = rospy.get_time()
                     self.creeper_atropelado = True
@@ -135,11 +145,54 @@ class RosActions:
                 self.dict['resultado'] = self.garra.capturar_objeto(self.momento_garra)      
 
 
-
-    def encontrar_estacao(self):
+    def procurando_estacao(self):
         img = self.RosFunctions.get_camera_bgr()
-        self.segue_pista()
-        self.estacao.estacao_objetivo(img)
+        dict_functions = self.RosFunctions.get_dic()
+        if img is not None:
+            encontrou_estacao, centro_estacao = self.estacao.estacao_objetivo(img)
+            if self.Procurando_estacao and encontrou_estacao:
+                self.posicao0 = dict_functions["posicao"]
+                self.angulo0 = dict_functions["ang_odom"]
+                print('Esta é minha última posição no GPS: ',self.posicao0, ' e o ângulo que eu estava: ' ,self.angulo0)
+                print('achei estacao')
+                self.dict['resultado'] = 'encontrou_estacao'
+                self.Procurando_estacao = False
+            elif self.Procurando_estacao:
+                self.segue_pista()
+    
+
+    def deixar_creeper(self):
+        img = self.RosFunctions.get_camera_bgr()
+        centro = img.shape[1]/2
+        dic_functions = self.RosFunctions.get_dic()
+        dist = dic_functions['distancia_frontal']
+        if img is not None:
+            encontrou_estacao, centro_estacao = self.estacao.estacao_objetivo(img)
+            # print(centro_estacao)
+            if not self.aproximou_estacao:
+                v_lin = 0.2
+                if dist < 0.7:
+                    v_lin = 0.1
+                if dist < 0.5:
+                    self.set_velocidade()
+                    self.aproximou_estacao = True
+                    self.largou_creeper = False
+                    self.momento_garra = rospy.get_time()
+                    print("Chegueiii")
+                delta_x = centro - centro_estacao
+                # print(centro)
+                max_delta = 150
+                w = (delta_x/max_delta)*0.15
+                # print(w)
+                self.set_velocidade(v_lin, w)
+            else:
+                if not self.largou_creeper:
+                    self.set_velocidade()
+                    self.largou_creeper = self.garra.largar_objeto(self.momento_garra)
+                elif self.largou_creeper:
+                    self.dict['resultado'] = 'largou_creeper'
+                    print('deixei o creeper no pitstop')
+        
 
     ##======================= FUNCTIONS ========================##
     #-------------------------- Linha --------------------------
@@ -316,12 +369,5 @@ class RosActions:
                     self.ready = True
             elif self.ready:
                 self.set_velocidade()
+                self.ready = False
                 self.dict['resultado'] = 'retornou'
-
-
-        
-        
-
-        
-
-        
