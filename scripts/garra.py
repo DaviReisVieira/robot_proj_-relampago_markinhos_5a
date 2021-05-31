@@ -31,6 +31,18 @@ class Garra:
             return 'pegou_creeper'  
         return 'pegando_creeper' 
         
-    def soltar_objeto(self, momento):
-        pass
+    def largar_objeto(self, momento):
+        now = rospy.get_time()
+        if now - momento < 0.5:
+            self.ombro.publish(0.0)
+        elif now - momento < 1.0:
+            self.garra.publish(-1.0)
+        elif now - momento < 1.5:
+            self.ombro.publish(-1.0)
+        elif now - momento < 2.0:
+            self.garra.publish(0.0)
+        else:
+            return True
+        return False
+            
         

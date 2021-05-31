@@ -25,10 +25,18 @@ class Estacao:
 
         self.objetivo = objetivo
 
+        self.encontrou_estacao = False
+        self.centro_estacao = (10000,10000)
+
 
     def estacao_objetivo(self, frame):
         if frame is not None:
             image = frame.copy()
-            result_frame, result_tuples = aux.detect(self.NET, image, self.CONFIDENCE, self.COLORS, self.CLASSES)
-        
+            result_frame, results = aux.detect(self.NET, image, self.CONFIDENCE, self.COLORS, self.CLASSES)
+            for result in results:
+                if result[0] == self.objetivo:
+                    self.encontrou_estacao = True
+                    self.centro_estacao = (result[2][0] + result[3][0])/2
+
             cv2.imshow("Mobilenet", result_frame)
+            return self.encontrou_estacao, self.centro_estacao

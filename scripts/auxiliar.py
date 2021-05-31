@@ -67,10 +67,10 @@ def find_center(frame, maior_contorno, centro):
         maior_contorno = np.reshape(maior_contorno, (maior_contorno.shape[0], 2))
         media = maior_contorno.mean(axis=0)
         media = media.astype(np.int32)
-        cv2.circle(frame, (media[0], media[1]), 5, [0, 255, 0])
+        cv2.circle(frame, (media[0], media[1]), 2, [0, 0, 0])
         crosshair(frame, centro)
     else:
-        media = (0, 0)
+        media = (-1000, -1000)
 
     return media
 
@@ -207,7 +207,7 @@ def regiao_centro_de_massa(mask, x1, y1, x2, y2):
     c[0]+=x1
     c[1]+=y1
     crosshair(mask_bgr, c, 10, (0,0,255))
-    cv2.rectangle(mask_bgr, (x1, y1), (x2, y2), (255,0,0),2,cv2.LINE_AA)
+    cv2.rectangle(mask_bgr, (x1, y1), (x2, y2), (0,0,255),2,cv2.LINE_AA)
     centro = (int(c[0]), int(c[1]))
     return mask_bgr, centro
 

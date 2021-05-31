@@ -8,9 +8,10 @@ from prints import logo_relampago_markinhos
 from config import config as c
 
 if __name__ == "__main__":
-    logo_relampago_markinhos(c.OBJETIVO, c.PRINTS_INICIAIS)
-    creeper_objetivo = Creeper(c.OBJETIVO[0],c.OBJETIVO[1])
-    estacao_objetivo = Estacao(c.OBJETIVO[2])
-    RelampagoMarkinhos(c.OBJETIVO, creeper_objetivo, estacao_objetivo, c.CONCEITO_C, c.SOMENTE_PISTA)
+    OBJETIVO, CONCEITO_C, SOMENTE_PISTA, PRINTS_INICIAIS = c.configuracoes_markinhos()
+    logo_relampago_markinhos(OBJETIVO, PRINTS_INICIAIS)
+    creeper_objetivo = Creeper(OBJETIVO[0],OBJETIVO[1])
+    estacao_objetivo = Estacao(OBJETIVO[2])
+    RelampagoMarkinhos(OBJETIVO, creeper_objetivo, estacao_objetivo, CONCEITO_C, SOMENTE_PISTA)
 
 
