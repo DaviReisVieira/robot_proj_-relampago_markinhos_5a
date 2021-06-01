@@ -13,7 +13,7 @@ import statsmodels.api as sm
 
 def filtrar_cor(bgr, low, high, kernel=False):
     '''
-    Can recieve the img in bgr, and color range or the color value in hex
+    Retorna máscara com cor filtrada por InRange
     '''
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
 
