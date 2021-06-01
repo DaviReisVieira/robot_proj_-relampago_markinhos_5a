@@ -14,7 +14,7 @@ class RosActions:
     # Classe que cuidará da movimentação do markinhos, iniciada na classe RelampagoMarkinhos
 
     ##========================== INIT ==========================##
-    def __init__(self, RosFunctions, creeper, estacao):
+    def __init__(self, RosFunctions, creeper, estacao, esquerda):
         '''
         Inicialização e recebe a classe RosFunctions para utilizar suas variáveis
         Indicação do publisher de velocidade.
@@ -23,6 +23,7 @@ class RosActions:
         self.creeper = creeper
         self.estacao = estacao
         self.garra = Garra()
+        self.sinalizacao_esquerda = esquerda
         self.dict = {}
 
         self.velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
@@ -166,7 +167,6 @@ class RosActions:
                 self.angulo0 = dict_functions["ang_odom"]
                 print(colored('PitStop! - Marty avisou pelo rádio que a Estação à frente é o objetivo!','yellow'))
                 print('Esta é minha última posição no GPS: ',self.posicao0, ' e o ângulo que eu estava: ' ,self.angulo0)
-                print('achei estacao')
                 self.dict['resultado'] = 'encontrou_estacao'
                 self.Procurando_estacao = False
             elif self.Procurando_estacao:
@@ -298,14 +298,20 @@ class RosActions:
             else:
                 self.seguir_linha()
         elif self.FLAG == 'entra_rotatoria':
-            self.rotacao_odom(dic_functions, -75)
+            if self.sinalizacao_esquerda:
+                self.rotacao_odom(dic_functions, 75)
+            else:
+                self.rotacao_odom(dic_functions, -75)
         elif self.FLAG == 'rotatoria':
             if now - self.dict['momento'] > 5:
                 self.FLAG = 'retorna_odom_rotatoria'
             else:
                 self.seguir_linha()
         elif self.FLAG == 'sai_rotatoria':
-            self.rotacao_odom(dic_functions, -75)
+            if self.sinalizacao_esquerda:
+                self.rotacao_odom(dic_functions, 75)
+            else:
+                self.rotacao_odom(dic_functions, -75)
         elif self.FLAG == 'retorna':
             self.rotacao_odom(dic_functions, 180)
 

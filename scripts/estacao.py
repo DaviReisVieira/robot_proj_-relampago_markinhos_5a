@@ -20,7 +20,7 @@ class Estacao:
 
         self.NET = cv2.dnn.readNetFromCaffe(proto, model)
         self.CLASSES = aux.mobilenet_classes()
-        self.CONFIDENCE = 0.2
+        self.CONFIDENCE = 0.5
         self.COLORS = np.random.uniform(0, 255, size=(len(self.CLASSES), 3))
 
         self.objetivo = objetivo

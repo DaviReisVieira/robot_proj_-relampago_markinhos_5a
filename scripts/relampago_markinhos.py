@@ -31,7 +31,7 @@ from termcolor import colored
 
 class RelampagoMarkinhos:
 
-    def __init__(self, objetivo, creeper, estacao, conceitoC = False, somente_pista = False):
+    def __init__(self, objetivo, creeper, estacao, conceitoC = False, somente_pista = False, esquerda = False):
         '''
         dasdfasd
         '''
@@ -42,11 +42,12 @@ class RelampagoMarkinhos:
         self.somente_pista = somente_pista
         self.creeper = creeper
         self.estacao = estacao
+        self.sinalizacao_esquerda = esquerda
         self.dict = {}
 
 
-        self.functions = RosFunctions(objetivo)
-        self.actions = RosActions(self.functions, self.creeper, self.estacao)
+        self.functions = RosFunctions(objetivo, self.sinalizacao_esquerda)
+        self.actions = RosActions(self.functions, self.creeper, self.estacao, self.sinalizacao_esquerda)
 
         self.missao = 'creeper'
         self.FLAG = 'procurando_creeper'

@@ -29,6 +29,9 @@ def configuracoes_markinhos(tests=False):
 
     # Para desligar as prints iniciais, mude 'PRINTS_INICIAIS' para False
     PRINTS_INICIAIS = True
+    
+    # Para virar a pista pela esquerda:
+    ESQUERDA = False
 
     if not tests:
         configs()
@@ -55,4 +58,4 @@ Missão 3 = ("orange", 11, "cow")
             if somente_segue_pista == 'Y' or somente_segue_pista == 'y':
                 SOMENTE_PISTA = True
 
-    return OBJETIVO, CONCEITO_C, SOMENTE_PISTA, PRINTS_INICIAIS
+    return OBJETIVO, CONCEITO_C, SOMENTE_PISTA, ESQUERDA, PRINTS_INICIAIS
