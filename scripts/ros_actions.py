@@ -85,6 +85,10 @@ class RosActions:
 
 
     def procurando_creeper(self):
+        '''
+        Enquanto roda pela pista deve procurar pela distancia do aruco e posteriormente se o seu centro combina com o centro da cor
+        Se sim, deve sair para buscar.
+        '''
         dict_functions = self.RosFunctions.get_dic()
         # print(dict_functions['distancia_aruco'])
         img = self.RosFunctions.get_camera_bgr()
@@ -108,6 +112,10 @@ class RosActions:
 
 
     def pegar_creeper(self): 
+        '''
+        Depois de identificar o creeper, sai da pista para ir buscar
+        Deve sinalizar para retornar a pista posteriormente
+        '''
         v_lin = 0.1
         dic_functions = self.RosFunctions.get_dic()
         img = self.RosFunctions.get_camera_bgr()
@@ -146,6 +154,9 @@ class RosActions:
 
 
     def procurando_estacao(self):
+        '''
+        Depois de pegar o creeper e voltar para a pista, liga o identificador do mobilenet e procura a estacao
+        '''
         img = self.RosFunctions.get_camera_bgr()
         dict_functions = self.RosFunctions.get_dic()
         if img is not None:
@@ -163,6 +174,9 @@ class RosActions:
     
 
     def deixar_creeper(self):
+        '''
+        Depois de encontar a estacao, se aproxima e libera o creeper
+        '''
         img = self.RosFunctions.get_camera_bgr()
         centro = img.shape[1]/2
         dic_functions = self.RosFunctions.get_dic()
