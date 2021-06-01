@@ -56,7 +56,7 @@ class RelampagoMarkinhos:
 
     def controle(self):
         '''
-        adjcnkajbd
+        Controle de FLAGs do Markinhos
         '''
         self.Resultado = self.actions.get_resultado()
 
@@ -108,7 +108,7 @@ class RelampagoMarkinhos:
         
     def iniciar_missao(self):
         '''
-        sadadsf
+        Inicia a missao no init
         '''
         try: 
             while not rospy.is_shutdown():

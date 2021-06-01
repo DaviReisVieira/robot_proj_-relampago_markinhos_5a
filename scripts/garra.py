@@ -18,6 +18,9 @@ class Garra:
 
 
     def capturar_objeto(self, momento):
+        '''
+        Movimentacao da garra para capturar o objeto
+        '''
         now = rospy.get_time()
         if not self.comecou_garra:
             self.comecou_garra = True
@@ -32,6 +35,9 @@ class Garra:
         return 'pegando_creeper' 
         
     def largar_objeto(self, momento):
+        '''
+        Movimentacao da garra para largar o objeto
+        '''
         now = rospy.get_time()
         if now - momento < 0.5:
             self.ombro.publish(0.0)

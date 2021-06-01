@@ -30,6 +30,10 @@ class Estacao:
 
 
     def estacao_objetivo(self, frame):
+        '''
+        Funcao que trabalha com a mobilenet
+        Retorna se encontrou a estacao e seu centro
+        '''
         if frame is not None:
             image = frame.copy()
             result_frame, results = aux.detect(self.NET, image, self.CONFIDENCE, self.COLORS, self.CLASSES)

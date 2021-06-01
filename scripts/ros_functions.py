@@ -216,6 +216,9 @@ class RosFunctions:
             pass
 
     def centro_aruco(self):
+        '''
+        Calcula o centro do aruco
+        '''
         self.dict['centro_aruco'] = [1000,1000]
         if self.ids is not None:
             if self.dict['id'] in self.ids:
@@ -228,6 +231,10 @@ class RosFunctions:
         
 
     def distancia_aruco(self):
+        '''
+        Calcula a distancia do aruco ate ao robo
+        Usa o tvec da funcao estimatePoseSingleMarker
+        '''
         self.dict['distancia_aruco'] = 100000
         if self.ids is not None:
             if self.dict['id'] in self.ids:
