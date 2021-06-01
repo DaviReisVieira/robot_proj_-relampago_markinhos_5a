@@ -24,4 +24,3 @@ Correcões e atualizaćões do código lancadas depois serão postadas neste dir
 Link para a página principal da disciplina: 
 [https://github.com/insper/robot21.1](https://github.com/insper/robot21.1)
 
-

@@ -94,7 +94,7 @@ class RelampagoMarkinhos:
                         self.FLAG = 'seguir_pista'
                     else:
                         self.FLAG = 'procurando_estacao'
-                        print("procurando estacao")
+                        print(colored("Estou Procurando o PitStop do Creeper","green"))
                         self.missao = 'estacao'
                 elif self.missao == 'estacao':
                     self.FLAG = 'seguir_pista'

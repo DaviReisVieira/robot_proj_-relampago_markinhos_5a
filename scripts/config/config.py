@@ -12,7 +12,7 @@ from prints import configs
 
 ##================================ MISSÕES ===============================##
 missao_1 = ("blue", 12, "dog")
-missao_2 = ("green", 21, "horse")
+missao_2 = ("green", 23, "horse")
 missao_3 = ("orange", 11, "cow")
 missoes = {'1':missao_1,'2':missao_2,'3':missao_3}
 ##============================= CONFIGURAÇÕES=============================##
@@ -35,7 +35,7 @@ def configuracoes_markinhos(tests=False):
 
         print("""
 Missão 1 = ("blue", 12, "dog")
-Missão 2 = ("green", 21, "horse")
+Missão 2 = ("green", 23, "horse")
 Missão 3 = ("orange", 11, "cow")
         """)
         objetivo_creeper = input('Escolha uma Missão: (1, 2, 3, custom / c): ')

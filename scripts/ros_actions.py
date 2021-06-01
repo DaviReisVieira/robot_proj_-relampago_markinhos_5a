@@ -153,6 +153,7 @@ class RosActions:
             if self.Procurando_estacao and encontrou_estacao:
                 self.posicao0 = dict_functions["posicao"]
                 self.angulo0 = dict_functions["ang_odom"]
+                print(colored('PitStop! - Marty avisou pelo rádio que a Estação à frente é o objetivo!','yellow'))
                 print('Esta é minha última posição no GPS: ',self.posicao0, ' e o ângulo que eu estava: ' ,self.angulo0)
                 print('achei estacao')
                 self.dict['resultado'] = 'encontrou_estacao'
@@ -178,7 +179,7 @@ class RosActions:
                     self.aproximou_estacao = True
                     self.largou_creeper = False
                     self.momento_garra = rospy.get_time()
-                    print("Chegueiii")
+                    print(colored(" - 'Relâmpago Markinhos': Vou deixar nosso Creeper na Estação! Katchau!","red"))
                 delta_x = centro - centro_estacao
                 # print(centro)
                 max_delta = 150
@@ -191,7 +192,6 @@ class RosActions:
                     self.largou_creeper = self.garra.largar_objeto(self.momento_garra)
                 elif self.largou_creeper:
                     self.dict['resultado'] = 'largou_creeper'
-                    print('deixei o creeper no pitstop')
         
 
     ##======================= FUNCTIONS ========================##
@@ -351,7 +351,10 @@ class RosActions:
         if dist <= 0.2:
             self.set_velocidade() 
             self.chegou = True
+        else:
+            self.chegou = False
         if not self.chegou:
+            self.ready = False
             if dif_abs > 5 and (theta - angle_to_goal) < 0 and dist > 0.2:
                 self.set_velocidade(0.3*(2/dif_abs), 0.17)
             elif dif_abs > 5 and (theta - angle_to_goal) > 0 and dist > 0.2:
@@ -370,4 +373,5 @@ class RosActions:
             elif self.ready:
                 self.set_velocidade()
                 self.ready = False
+                self.chegou = False
                 self.dict['resultado'] = 'retornou'
