@@ -21,13 +21,14 @@ class RosFunctions:
     # Classe que cuidará dos sensores do markinhos, iniciada na classe RelampagoMarkinhos e utilizada na RosActions
 
     ##========================== INIT ==========================##
-    def __init__(self, objetivo):
+    def __init__(self, objetivo, esquerda):
         '''
         função de init da classe
         Start dos Subscribers (inicialização dos sensores e suas funções de controle)
         Criação do dicionário de variáveis e a inicialização delas
         '''
         self.bridge = CvBridge()
+        self.sinalizacao_esquerda = esquerda
         self.dict = {}
         self.dict_ids = {}
 
@@ -163,7 +164,10 @@ class RosFunctions:
         mask = aux.filtrar_cor(self.camera_bgr,np.array([22, 50, 50], dtype=np.uint8), np.array([32, 255, 255], dtype=np.uint8), True)
         
         if self.dict['corte_direita']:
-            img, centro_amarelo = aux.regiao_centro_de_massa(mask, mask.shape[1]//2, 0, mask.shape[1], mask.shape[0])  
+            if self.sinalizacao_esquerda:
+                img, centro_amarelo = aux.regiao_centro_de_massa(mask, 0, 0, mask.shape[1]//2, mask.shape[0])
+            else:
+                img, centro_amarelo = aux.regiao_centro_de_massa(mask, mask.shape[1]//2, 0, mask.shape[1], mask.shape[0])  
         else:
             img, centro_amarelo = aux.regiao_centro_de_massa(mask, 0, 300, mask.shape[1], mask.shape[0])  
         
