@@ -1,3 +1,7 @@
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
+from prints import configs
 ##========================================================================##
 #                       __ _                            /\/|               #
 #                      / _(_)                          |/\/                #
@@ -8,7 +12,6 @@
 #                             __/ |                 )_)                    #
 #                            |___/                                         #
 ##========================================================================##
-from prints import configs
 
 ##================================ MISSÕES ===============================##
 missao_1 = ("blue", 12, "dog")
@@ -16,8 +19,10 @@ missao_2 = ("green", 23, "horse")
 missao_3 = ("orange", 11, "cow")
 missoes = {'1':missao_1,'2':missao_2,'3':missao_3}
 ##============================= CONFIGURAÇÕES=============================##
-
 def configuracoes_markinhos(tests=False):
+    '''
+    Função que configura as ações do Relâmpago Markinhos
+    '''
     # Coloque na Variável 'OBJETIVO' qual Missão você deseja realizar!
     OBJETIVO = missao_1
 
@@ -30,7 +35,7 @@ def configuracoes_markinhos(tests=False):
     # Para desligar as prints iniciais, mude 'PRINTS_INICIAIS' para False
     PRINTS_INICIAIS = True
     
-    # Para virar a pista pela esquerda:
+    # Para seguir a pista realizando as curvas pela esquerda ao invés da direita
     ESQUERDA = False
 
     if not tests:

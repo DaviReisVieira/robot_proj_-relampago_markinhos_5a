@@ -1,3 +1,6 @@
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
 import auxiliar as aux
 
 class Creeper:
@@ -13,7 +16,7 @@ class Creeper:
 
     def identifica_creepers(self, ros_functions):
         '''
-        Mascara da cor do objetivo do creeper,
+        Máscara da cor do objetivo do creeper,
         retorna o centro da imagem, o centro dos contornos e a area do maior contorno
         '''
         centro, maior_contorno_area, media = aux.identifica_cor(ros_functions.camera_bgr, self.get_cor())

@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding:utf-8 -*-
+
 from relampago_markinhos import RelampagoMarkinhos
 from creeper import Creeper
 from estacao import Estacao

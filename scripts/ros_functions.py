@@ -1,19 +1,18 @@
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
 from __future__ import print_function, division
-#from relampago_markinhos import RelampagoMarkinhos
 import rospy
 import numpy as np
 import math
-import tf
 import auxiliar as aux
 import cv2
 import cv2.aruco as aruco
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import Image, CompressedImage
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 from tf import transformations
-from tf import TransformerROS
-import tf2_ros
 
 
 
@@ -22,11 +21,7 @@ class RosFunctions:
 
     ##========================== INIT ==========================##
     def __init__(self, objetivo, esquerda):
-        '''
-        função de init da classe
-        Start dos Subscribers (inicialização dos sensores e suas funções de controle)
-        Criação do dicionário de variáveis e a inicialização delas
-        '''
+
         self.bridge = CvBridge()
         self.sinalizacao_esquerda = esquerda
         self.dict = {}
@@ -37,10 +32,6 @@ class RosFunctions:
         self.recebe_odom = rospy.Subscriber("/odom", Odometry , self.recebeu_leitura_odometria)
 
         self.aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
-
-
-        #self.dict_relampago = relampago_markinhos.get_dic()
-        #self.dict_actions = ros_actions.get_dic()
 
         self.camera_bgr = None
 
@@ -63,7 +54,6 @@ class RosFunctions:
         self.dict["id"] = objetivo[1]
         self.dict['distancia_aruco'] = 100000
         self.dict['centro_aruco'] = [1000,1000]
-
 
         self.ids = []
         
@@ -101,7 +91,6 @@ class RosFunctions:
         Responsável por aplicar a regressão da linha amarela, identificar o aruco e orientar a organização da sinalização identificados
         Identifica o mobilenet e calcula a área da estação desejada quando necessário
         '''
-        #dic_relampago = RelampagoMarkinhos.get_dic()
         try:
             imagem_crua = imagem
             imagem_original = self.bridge.compressed_imgmsg_to_cv2(imagem_crua, "bgr8")
@@ -118,7 +107,7 @@ class RosFunctions:
             print('ex', e)
 
 
-    #-------------------------- Lazer ----------------------------
+    #-------------------------- Laser ----------------------------
     def scaneou(self, dado):
         '''
         Função que cuida do laser do robô para identificação da distância
@@ -150,7 +139,6 @@ class RosFunctions:
         else:
             ang_odom = angulos[2]
 
-        #print('posicao x:', self.x_odom, ',  posixao y', self.y_odom)
         self.dict['posicao'] = [x_odom, y_odom]
         self.dict['ang_odom'] = ang_odom
 
@@ -171,7 +159,7 @@ class RosFunctions:
         else:
             img, centro_amarelo = aux.regiao_centro_de_massa(mask, 0, 300, mask.shape[1], mask.shape[0])  
         
-        saida_bgr, m, h = aux.ajuste_linear_grafico_x_fy(mask)
+        _, m, _ = aux.ajuste_linear_grafico_x_fy(mask)
         
         ang = math.atan(m)
         ang_deg = math.degrees(ang)
@@ -180,7 +168,6 @@ class RosFunctions:
         self.dict['centro_x_amarelo'] = centro_amarelo[0]
 
         cv2.imshow("Filtro", img)
-        # cv2.imshow("Regressão", saida_bgr)
 
     #-------------------------- Aruco ----------------------------
     def aruco_ids(self, draw_image = False):
@@ -190,7 +177,8 @@ class RosFunctions:
         img = self.camera_bgr
         if img is not None:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            self.corners, self.ids, rejectedImgPoints = aruco.detectMarkers(gray, self.aruco_dict)
+            self.corners, self.ids, _ = aruco.detectMarkers(gray, self.aruco_dict)
+
 
             if draw_image:
                 bgr = img.copy()
@@ -201,12 +189,11 @@ class RosFunctions:
             
             self.centro_aruco()
             self.distancia_aruco()
-                
             
-
-
     def identifica_sinais(self):
-        # Função que dos ids identificados, organiza a sinalização da pista
+        '''
+        Função que dos ids identificados, organiza a sinalização da pista
+        '''
         try:
             for i in self.dict['ids']:
                 if i == 100:
@@ -216,7 +203,6 @@ class RosFunctions:
                 elif (i == 50 or i == 150) and (self.dict['sinalizacao'] != 'bifurcacao' or self.dict['passou_bifurcacao']):
                     self.dict['sinalizacao'] = 'retorna'
         except Exception:
-	        #print("Ocorreu uma erro na leitura dos IDs. Markinhos não passa bem.")
             pass
 
     def centro_aruco(self):
@@ -228,12 +214,8 @@ class RosFunctions:
             if self.dict['id'] in self.ids:
                 i = list(self.ids).index(self.dict['id'])
                 p1, p2 = (np.array(self.corners[i][0][0]), np.array(self.corners[i][0][2]))
-                # print(p1,p2)
                 self.dict['centro_aruco'] = ((p2[0] + p1[0])/2, (p2[1] + p1[1])/2)
-                # print(self.dict['centro_aruco'])
                     
-        
-
     def distancia_aruco(self):
         '''
         Calcula a distancia do aruco ate ao robo
@@ -244,6 +226,5 @@ class RosFunctions:
             if self.dict['id'] in self.ids:
                 i = list(self.ids).index(self.dict['id'])
                 ret = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_size, self.camera_matrix, self.camera_distortion)
-                rvec, self.tvec = ret[0][0,0,:], ret[1][0,0,:]
+                _, self.tvec = ret[0][0,0,:], ret[1][0,0,:]
                 self.dict['distancia_aruco'] = np.sqrt(self.tvec[0]**2 + self.tvec[1]**2 + self.tvec[2]**2)
-                # print(self.dict['distancia_aruco'])

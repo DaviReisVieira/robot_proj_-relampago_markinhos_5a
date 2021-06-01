@@ -1,7 +1,8 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
 import time
 from termcolor import colored
-# from playsound import playsound
 
 def configs():
     print("\n\n")
@@ -17,19 +18,18 @@ def configs():
     print(colored("##========================================================================##","yellow"))
 
 def logo_relampago_markinhos(objetivo, ativar_todos = False):
-    insper_on = False
+    '''
+    Função que imprime uma pequena animação no terminal
+    '''
     markinhos_on = False
     sinal_on = False
     agradecimentos_on = False
     time_regulado = 0.1
 
     if ativar_todos:
-        insper_on = True
         markinhos_on = True
         sinal_on = False
         agradecimentos_on = True
-
-    # playsound("/home/borg/catkin_ws/src/robot_proj_-relampago_markinhos_5a/scripts/som_sinal.mp3")
 
     if markinhos_on:
         print("\n\n")
@@ -72,7 +72,6 @@ def logo_relampago_markinhos(objetivo, ativar_todos = False):
         time.sleep(time_regulado)
 
     if sinal_on:
-        # playsound("som_sinal.mp3")
         print("\n\n")
         time.sleep(time_regulado+0.4)
         print(colored("               ______       ","red"))
