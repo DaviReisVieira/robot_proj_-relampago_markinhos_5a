@@ -1,11 +1,11 @@
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
 from __future__ import division, print_function
 
-# import the necessary packages
 import numpy as np
-import argparse
 import cv2
 import auxiliar as aux
-
 import rospkg
 import os
 
@@ -31,7 +31,7 @@ class Estacao:
 
     def estacao_objetivo(self, frame):
         '''
-        Funcao que trabalha com a mobilenet
+        Função que trabalha com a mobilenet
         Retorna se encontrou a estacao e seu centro
         '''
         if frame is not None:

@@ -1,11 +1,11 @@
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
 from __future__ import print_function, division
 import rospy
 import numpy as np
-import tf
-import cv2
 from math import atan2, degrees
-from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped, Point
-from std_msgs.msg import Float64
+from geometry_msgs.msg import Twist, Point
 from termcolor import colored
 from garra import Garra
 
@@ -91,15 +91,11 @@ class RosActions:
         Se sim, deve sair para buscar.
         '''
         dict_functions = self.RosFunctions.get_dic()
-        # print(dict_functions['distancia_aruco'])
         img = self.RosFunctions.get_camera_bgr()
         if img is not None:
             if dict_functions['distancia_aruco'] < 750 and self.Procurando: 
-                # print('distancia ok')
-                centro, maior_contorno_area, media = self.creeper.identifica_creepers(self.RosFunctions)
-                # print(media)
+                _, _, media = self.creeper.identifica_creepers(self.RosFunctions)
                 if abs(media[0] - dict_functions['centro_aruco'][0]) < 20:
-                    # print('centro ok')
                     if self.posicao0 is None:
                         self.posicao0 = dict_functions["posicao"]
                         self.angulo0 = dict_functions["ang_odom"]
@@ -161,7 +157,7 @@ class RosActions:
         img = self.RosFunctions.get_camera_bgr()
         dict_functions = self.RosFunctions.get_dic()
         if img is not None:
-            encontrou_estacao, centro_estacao = self.estacao.estacao_objetivo(img)
+            encontrou_estacao, _ = self.estacao.estacao_objetivo(img)
             if self.Procurando_estacao and encontrou_estacao:
                 self.posicao0 = dict_functions["posicao"]
                 self.angulo0 = dict_functions["ang_odom"]
@@ -182,8 +178,7 @@ class RosActions:
         dic_functions = self.RosFunctions.get_dic()
         dist = dic_functions['distancia_frontal']
         if img is not None:
-            encontrou_estacao, centro_estacao = self.estacao.estacao_objetivo(img)
-            # print(centro_estacao)
+            _, centro_estacao = self.estacao.estacao_objetivo(img)
             if not self.aproximou_estacao:
                 v_lin = 0.2
                 if dist < 0.7:
@@ -195,10 +190,8 @@ class RosActions:
                     self.momento_garra = rospy.get_time()
                     print(colored(" - 'Relâmpago Markinhos': Vou deixar nosso Creeper na Estação! Katchau!","red"))
                 delta_x = centro - centro_estacao
-                # print(centro)
                 max_delta = 150
                 w = (delta_x/max_delta)*0.15
-                # print(w)
                 self.set_velocidade(v_lin, w)
             else:
                 if not self.largou_creeper:
@@ -365,8 +358,6 @@ class RosActions:
             angle_to_goal += 360
         
         dif_abs = abs(angle_to_goal - theta)
-
-        # print(f"angle to goal: {angle_to_goal}\nrobot angle:{theta}")
 
         if dist <= 0.2:
             self.set_velocidade() 

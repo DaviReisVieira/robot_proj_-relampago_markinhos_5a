@@ -1,22 +1,21 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-ss
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
 '''
 @author: NicolasQueiroga, fran-janela, DaviReisVieira
 '''
 
-
 import numpy as np
 import cv2
-import os
 import statsmodels.api as sm
 
 
 def filtrar_cor(bgr, low, high, kernel=False):
     '''
-    Retorna máscara com cor filtrada por InRange
+    Recebe uma imagem em bgr e tonalidades de cor mínima e máxima,
+    retorna máscara com cor filtrada por InRange
     '''
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-
     mask = cv2.inRange(hsv, low, high)
 
     if kernel:
@@ -28,8 +27,8 @@ def filtrar_cor(bgr, low, high, kernel=False):
 
 def encontrar_contornos(mask):
     '''
-        Não mude ou renomeie esta função
-        deve receber uma imagem preta e branca os contornos encontrados
+    Recebe uma imagem preta e branca e retorna
+    os contornos encontrados
     '''
     contornos, arvore = cv2.findContours(mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
 
@@ -37,9 +36,8 @@ def encontrar_contornos(mask):
 
 def encontrar_maior_contorno(segmentado):
     '''
-    Não mude ou renomeie esta função
-    deve receber uma imagem preta e 
-    branca e retornar APENAS o maior contorno obtido
+    Recebe uma imagem preta e 
+    branca e retorna APENAS o maior contorno obtido
     '''
 
     contornos, arvore = cv2.findContours(segmentado.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
@@ -57,9 +55,9 @@ def encontrar_maior_contorno(segmentado):
     
 def find_center(frame, maior_contorno, centro):
     '''
-    Não mude ou renomeie esta função
-    deve receber um contorno e retornar, 
-    respectivamente, a imagem com uma cruz no centro de cada segmento 
+    Recebe um contorno e retorna, 
+    respectivamente, a imagem com uma cruz 
+    no centro de cada segmento 
     e o centro dele. formato: img, x, y
     '''
     if not maior_contorno is None:
@@ -75,6 +73,10 @@ def find_center(frame, maior_contorno, centro):
     return media
 
 def crosshair(img, point, size=20, color=(128, 0, 0)):
+    '''
+    Recebe uma imagem e um ponto, e retorna a mesma imagem
+    com um crosshair (target)
+    '''
     x, y = point
     cv2.line(img, (x - size, y), (x + size, y), color, 2)
     cv2.line(img, (x, y - size), (x, y + size), color, 2)
@@ -82,9 +84,8 @@ def crosshair(img, point, size=20, color=(128, 0, 0)):
 
 def desenhar_linha_entre_pontos(img, X, Y, color=(255, 120, 0)):
     '''
-        Não mude ou renomeie esta função
-        deve receber uma lista de coordenadas XY, e retornar uma imagem 
-        com uma linha entre os centros EM SEQUENCIA do mais proximo.
+    Recebe uma lista de coordenadas XY, e retorna uma imagem 
+    com uma linha entre os centros EM SEQUENCIA do mais proximo.
     '''
 
     img_line = img.copy()
@@ -95,6 +96,9 @@ def desenhar_linha_entre_pontos(img, X, Y, color=(255, 120, 0)):
 
 
 def mobilenet_classes():
+    '''
+    Retorna as classes da rede neural Mobile Net
+    '''
     CLASSES = [ "background", "aeroplane", "bicycle", "bird", "boat",
                 "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
                 "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
@@ -105,13 +109,12 @@ def mobilenet_classes():
 def detect(net, frame, CONFIDENCE, COLORS, CLASSES):
     '''
     Recebe - uma imagem colorida BGR
-    Devolve: objeto encontrado
+    Retorna - objeto encontrado
     '''
     image = frame.copy()
     (h, w) = image.shape[:2]
     blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 0.007843, (300, 300), 127.5)
 
-    #print("[INFO] computing object detections...")
     net.setInput(blob)
     detections = net.forward()
 
@@ -125,7 +128,6 @@ def detect(net, frame, CONFIDENCE, COLORS, CLASSES):
             startX, startY, endX, endY = box.astype("int")
 
             label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
-            #print("[INFO] {}".format(label))
             cv2.rectangle(image, (startX, startY), (endX, endY), COLORS[idx], 2)
             y = startY - 15 if startY - 15 > 15 else startY + 15
             cv2.putText(image, label, (startX, y),

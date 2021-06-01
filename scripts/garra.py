@@ -1,7 +1,8 @@
+#! /usr/bin/env python3
+# -*- coding:utf-8 -*-
+
 import rospy
 from std_msgs.msg import Float64
-
-import auxiliar as aux
 
 class Garra:
     def __init__(self):
@@ -19,24 +20,22 @@ class Garra:
 
     def capturar_objeto(self, momento):
         '''
-        Movimentacao da garra para capturar o objeto
+        Movimentação da garra para capturar o objeto
         '''
         now = rospy.get_time()
         if not self.comecou_garra:
             self.comecou_garra = True
         elif now - momento < 2.0:
             self.garra.publish(0.0)  ## Fechado   
-            # print('Fecha garra')
         elif 2.0 <= now - momento < 3.0:
             self.ombro.publish(1.5)  ## Levanta
-            # print('levanta ombro')
         else:
             return 'pegou_creeper'  
         return 'pegando_creeper' 
         
     def largar_objeto(self, momento):
         '''
-        Movimentacao da garra para largar o objeto
+        Movimentação da garra para largar o objeto
         '''
         now = rospy.get_time()
         if now - momento < 0.5:

@@ -3,38 +3,15 @@
 
 from __future__ import print_function, division
 import rospy
-import numpy as np
-import tf
-import auxiliar as aux
-import math
-from math import pi
-import cv2
-import cv2.aruco as aruco
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import Image, CompressedImage
-from cv_bridge import CvBridge, CvBridgeError
-from tf import transformations
-from tf import TransformerROS
-import tf2_ros
-from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped
-from std_msgs.msg import Float64
-from nav_msgs.msg import Odometry
-from std_msgs.msg import Header
-
 from ros_functions import RosFunctions
 from ros_actions import RosActions
-from estacao import Estacao
-
 from prints import encerrar_missao
 from termcolor import colored
 
 class RelampagoMarkinhos:
 
     def __init__(self, objetivo, creeper, estacao, conceitoC = False, somente_pista = False, esquerda = False):
-        '''
-        dasdfasd
-        '''
+
         rospy.init_node("projeto")
 
         self.objetivo = objetivo
@@ -57,7 +34,7 @@ class RelampagoMarkinhos:
 
     def controle(self):
         '''
-        Controle de FLAGs do Markinhos
+        Controle de FLAG's do Markinhos
         '''
         self.Resultado = self.actions.get_resultado()
 
