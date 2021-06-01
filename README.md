@@ -44,19 +44,19 @@ Este objetivo é crucial para Relâmpago Markinhos: Salvar os Creepers perdidos 
 <p>
     <img width="540" src="assets/Azul.jpg">
 </p>
-<a href="https://youtu.be/XZNd8geoBpo" title="Missão 1">Relâmpago Markinhos - Missão 1 (Conceito A)</a>
+<a href="https://youtu.be/qkSmkyzKwv0" title="Missão 1">Relâmpago Markinhos - Missão 1 (Conceito A)</a>
 
 <h3>Objetivo 2.2: Missão 2 ("green", 23, "horse")</h3>
 <p>
     <img width="540" src="assets/Verde.jpg">
 </p>
-<a href="https://youtu.be/XZNd8geoBpo" title="Missão 2">Relâmpago Markinhos - Missão 2 (Conceito A)</a>
+<a href="https://youtu.be/KQTrSiS9FLw" title="Missão 2">Relâmpago Markinhos - Missão 2 (Conceito A)</a>
 
 <h3>Objetivo 2.3: Missão 3 ("orange", 11, "cow")</h3>
 <p>
     <img width="540" src="assets/Laranja.jpg">
 </p>
-<a href="https://youtu.be/XZNd8geoBpo" title="Missão 3">Relâmpago Markinhos - Missão 3 (Conceito A)</a>
+<a href="https://youtu.be/7692QlSTNNI" title="Missão 3">Relâmpago Markinhos - Missão 3 (Conceito A)</a>
 
 </div>
 
