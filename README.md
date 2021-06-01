@@ -7,6 +7,10 @@
   <img width="540" src="assets/Relampago.jpg">
 </p>
 
+[![ROS](https://img.shields.io/badge/ros-noetic-blue)](https://www.ros.org/)
+[![ROS](https://img.shields.io/badge/gazebo-11.0.0-blue)](http://gazebosim.org/)
+[![Python 3](https://img.shields.io/badge/python-3-blue.svg?v=1)](https://www.python.org/)
+
 # Mecânicos Responsáveis
 
 <table>
@@ -77,4 +81,7 @@ Relâmpago Markinhos e sua equipe decidiram proporcionar uma experiência única
     $ rosrun ros_projeto projeto.py
 ```
 
+<p>
+Caso você queira alterar prints iniciais e seguir a pista pela esquerda, poderá acessar o config.py. O resto das configurações pelos inputs iniciais!  
+</p>
 </div>
